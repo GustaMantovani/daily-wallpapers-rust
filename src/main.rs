@@ -1,4 +1,8 @@
+// External 👽️
 use clap::{Parser, Subcommand};
+
+// Our things 👥
+mod operations;
 
 #[derive(Parser, Debug)]
 #[command(name = "dw", about = "Daily Wallpaper Manager")]
@@ -23,7 +27,10 @@ enum Commands {
     Preset {
         #[arg()]
         preset: String,
-        #[arg(required_if_eq("preset", "by minutes"), required_if_eq("preset", "by hours"))]
+        #[arg(
+            required_if_eq("preset", "by minutes"),
+            required_if_eq("preset", "by hours")
+        )]
         interval: Option<u64>,
     },
     #[command(about = "Disable daily wallpapers")]
@@ -37,19 +44,19 @@ fn main() {
 
     match &cli.command {
         Commands::AddWallpaper { path } => {
-            println!("Adding wallpaper: {}", path);
+            operations::add_wallpaper(path);
         }
         Commands::RemoveWallpaper { path } => {
-            println!("Removing wallpaper: {}", path);
+            operations::remove_wallpaper(path);
         }
         Commands::Preset { preset, interval } => {
-            println!("Setting preset: {} with interval: {:?}", preset, interval);
+            operations::set_preset(preset, *interval);
         }
         Commands::Off => {
-            println!("Disabling daily wallpapers");
+            operations::disable_wallpapers();
         }
         Commands::On => {
-            println!("Enabling daily wallpapers");
+            operations::enable_wallpapers();
         }
     }
 }
