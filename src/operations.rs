@@ -40,7 +40,10 @@ pub fn reset_wallpaper_cycle() {
 
 pub fn set_wallpaper(path: &String) {
     println!("Setting {} as wallpaper", path);
-    dw_core::change_wallpaper(path);
+    match dw_core::change_wallpaper(path) {
+        Ok(_) => {},
+        Err(err) => eprintln!("Erro: {}", err),
+    }
 }
 
 pub fn disable_wallpapers() {
