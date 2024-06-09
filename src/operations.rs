@@ -14,6 +14,10 @@
 
 // src/operations.rs
 
+// Our things 👥
+#[path = "./dw_core.rs"]
+mod dw_core;
+
 pub fn add_wallpaper(path: &str) {
     println!("Adding wallpaper: {}", path);
 }
@@ -24,6 +28,19 @@ pub fn remove_wallpaper(path: &str) {
 
 pub fn set_preset(preset: &str, interval: Option<u64>) {
     println!("Setting preset: {} with interval: {:?}", preset, interval);
+}
+
+pub fn set_next_wallpaper() {
+    println!("Setting the next wallpaper");
+}
+
+pub fn reset_wallpaper_cycle() {
+    println!("Setting the first wallpapers");
+}
+
+pub fn set_wallpaper(path: &String) {
+    println!("Setting {} as wallpaper", path);
+    dw_core::change_wallpaper(path);
 }
 
 pub fn disable_wallpapers() {

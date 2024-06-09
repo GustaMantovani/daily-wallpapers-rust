@@ -49,6 +49,14 @@ enum Commands {
         )]
         interval: Option<u64>,
     },
+    #[command(about = "Set the first wallpaper in the cycle and reset")]
+    Reset,
+    #[command(about = "Sets a specific wallpaper, but does not change the cycle")]
+    Set{
+        path: String
+    },
+    #[command(about = "Set the next wallpaper in the cycle")]
+    Next,
     #[command(about = "Disable daily wallpapers")]
     Off,
     #[command(about = "Enable daily wallpapers")]
@@ -67,6 +75,15 @@ fn main() {
         }
         Commands::Preset { preset, interval } => {
             operations::set_preset(preset, *interval);
+        }
+        Commands::Next => {
+            operations::set_next_wallpaper();
+        }
+        Commands::Reset => {
+            operations::reset_wallpaper_cycle();
+        }
+        Commands::Set {path} => {
+            operations::set_wallpaper(path);
         }
         Commands::Off => {
             operations::disable_wallpapers();
