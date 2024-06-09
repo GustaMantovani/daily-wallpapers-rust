@@ -52,9 +52,7 @@ enum Commands {
     #[command(about = "Set the first wallpaper in the cycle and reset")]
     Reset,
     #[command(about = "Sets a specific wallpaper, but does not change the cycle")]
-    Set{
-        path: String
-    },
+    Set { path: String },
     #[command(about = "Set the next wallpaper in the cycle")]
     Next,
     #[command(about = "Disable daily wallpapers")]
@@ -82,7 +80,7 @@ fn main() {
         Commands::Reset => {
             operations::reset_wallpaper_cycle();
         }
-        Commands::Set {path} => {
+        Commands::Set { path } => {
             operations::set_wallpaper(path);
         }
         Commands::Off => {

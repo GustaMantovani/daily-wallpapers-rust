@@ -13,17 +13,17 @@
 // limitations under the License.
 
 // src/dw_core.rs
-use std::process::Command;
 use std::path::Path;
+use std::process::Command;
 
 pub fn change_wallpaper(path: &String) {
-
     if !Path::new(path).exists() {
         eprintln!("O caminho especificado não existe: {}", path);
         return;
     }
 
-    let command = "gsettings set org.gnome.desktop.background picture-uri-dark ".to_owned()+ &path.to_owned();
+    let command = "gsettings set org.gnome.desktop.background picture-uri-dark ".to_owned()
+        + &path.to_owned();
 
     let output = Command::new("bash")
         .arg("-c")
@@ -35,5 +35,5 @@ pub fn change_wallpaper(path: &String) {
         let stderr = String::from_utf8_lossy(&output.stderr);
         eprintln!("Err: {}", stderr);
         //Exibir notificação de erro no gnome
-    } 
+    }
 }
