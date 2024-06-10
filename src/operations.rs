@@ -18,38 +18,52 @@
 #[path = "./dw_core.rs"]
 mod dw_core;
 
-pub fn add_wallpaper(path: &str) {
+pub fn add_wallpaper(path: &str) -> Result<(), Box<dyn std::error::Error>> {
     println!("Adding wallpaper: {}", path);
+    // Implementação da função...
+    Ok(())
 }
 
-pub fn remove_wallpaper(path: &str) {
+pub fn remove_wallpaper(path: &str) -> Result<(), Box<dyn std::error::Error>> {
     println!("Removing wallpaper: {}", path);
+    // Implementação da função...
+    Ok(())
 }
 
-pub fn set_preset(preset: &str, interval: Option<u64>) {
+pub fn set_preset(preset: &str, interval: Option<u64>) -> Result<(), Box<dyn std::error::Error>> {
     println!("Setting preset: {} with interval: {:?}", preset, interval);
+    // Implementação da função...
+    Ok(())
 }
 
-pub fn set_next_wallpaper() {
+pub fn set_next_wallpaper() -> Result<(), Box<dyn std::error::Error>> {
     println!("Setting the next wallpaper");
+    // Implementação da função...
+    Ok(())
 }
 
-pub fn reset_wallpaper_cycle() {
+pub fn reset_wallpaper_cycle() -> Result<(), Box<dyn std::error::Error>> {
     println!("Setting the first wallpapers");
+    // Implementação da função...
+    Ok(())
 }
 
-pub fn set_wallpaper(path: &String) {
+pub fn set_wallpaper(path: &String) -> Result<(), Box<dyn std::error::Error>> {
     println!("Setting {} as wallpaper", path);
     match dw_core::change_wallpaper(path) {
-        Ok(_) => {},
-        Err(err) => eprintln!("Erro: {}", err),
+        Ok(_) => Ok(()),
+        Err(err) => Err(err.into()),
     }
 }
 
-pub fn disable_wallpapers() {
+pub fn disable_wallpapers() -> Result<(), Box<dyn std::error::Error>> {
     println!("Disabling daily wallpapers");
+    // Implementação da função...
+    Ok(())
 }
 
-pub fn enable_wallpapers() {
+pub fn enable_wallpapers() -> Result<(), Box<dyn std::error::Error>> {
     println!("Enabling daily wallpapers");
+    // Implementação da função...
+    Ok(())
 }

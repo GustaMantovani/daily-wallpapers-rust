@@ -14,6 +14,8 @@
 
 // src/main.rs
 
+use std::process;
+
 // External 👽️
 use clap::{Parser, Subcommand};
 
@@ -63,31 +65,27 @@ enum Commands {
 
 fn main() {
     let cli = Cli::parse();
-
+    let res;
     match &cli.command {
-        Commands::AddWallpaper { path } => {
-            operations::add_wallpaper(path);
-        }
-        Commands::RemoveWallpaper { path } => {
-            operations::remove_wallpaper(path);
-        }
-        Commands::Preset { preset, interval } => {
-            operations::set_preset(preset, *interval);
-        }
-        Commands::Next => {
-            operations::set_next_wallpaper();
-        }
-        Commands::Reset => {
-            operations::reset_wallpaper_cycle();
-        }
-        Commands::Set { path } => {
-            operations::set_wallpaper(path);
-        }
-        Commands::Off => {
-            operations::disable_wallpapers();
-        }
-        Commands::On => {
-            operations::enable_wallpapers();
-        }
+        Commands::AddWallpaper { path } => res = operations::add_wallpaper(path),
+
+        Commands::RemoveWallpaper { path } => res = operations::remove_wallpaper(path),
+
+        Commands::Preset { preset, interval } => res = operations::set_preset(preset, *interval),
+
+        Commands::Next => res = operations::set_next_wallpaper(),
+
+        Commands::Reset => res = operations::reset_wallpaper_cycle(),
+
+        Commands::Set { path } => res = operations::set_wallpaper(path),
+
+        Commands::Off => res = operations::disable_wallpapers(),
+
+        Commands::On => res = operations::enable_wallpapers(),
+    };
+    
+    if let Err(err) = res {
+        eprintln!("Erro: {}", err);
+        process::exit(1);
     }
 }
