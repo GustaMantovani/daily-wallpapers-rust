@@ -10,4 +10,3 @@ repository = "https://github.com/GustaMantovani/daily-wallpapers-rust"
 
 [dependencies]
 clap = { version = "4.5.6", features = ["derive"] }
-zbus = "4.2.2"
