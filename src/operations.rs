@@ -50,10 +50,7 @@ pub fn reset_wallpaper_cycle() -> Result<(), Box<dyn std::error::Error>> {
 
 pub fn set_wallpaper(path: &String) -> Result<(), Box<dyn std::error::Error>> {
     println!("Setting {} as wallpaper", path);
-    match dw_core::change_wallpaper(path) {
-        Ok(_) => Ok(()),
-        Err(err) => Err(err.into()),
-    }
+    return dw_core::change_wallpaper(path);
 }
 
 pub fn disable_wallpapers() -> Result<(), Box<dyn std::error::Error>> {
