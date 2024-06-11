@@ -12,14 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// src/dw_core.rs
+// src/dw_core_functions.rs
 
 use std::path::Path;
 use std::process::Command;
 
-pub fn change_wallpaper(path: &str) -> Result<(), Box<dyn std::error::Error>> {
+// Our things 👥
+use crate::dw_models::CoreFunctionExecutionResult;
+
+pub fn change_wallpaper(path: &str) -> CoreFunctionExecutionResult {
     if !Path::new(path).exists() {
-        return Err("O caminho do arquivo não existe".into());
+        return CoreFunctionExecutionResult {
+            sucess: false,
+            exit_code: 1,
+            message: format!("Path {path} not found"),
+            command_execution_output: None,
+        };
     }
 
     let command = format!(
@@ -29,13 +37,23 @@ pub fn change_wallpaper(path: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     let output = Command::new("bash")
         .arg("-c")
-        .arg(command)
+        .arg(command.clone())
         .output()
-        .map_err(|e| format!("Falha ao executar o processo: {}", e))?;
+        .expect(&format!("Failed to execute the process bash -c {command}"));
 
     if output.status.success() {
-        Ok(())
+        return CoreFunctionExecutionResult {
+            sucess: true,
+            exit_code: 0,
+            message: format!("Sucess"),
+            command_execution_output: Some(output),
+        };
     } else {
-        Err("O comando para alterar o papel de parede falhou".into())
+        return CoreFunctionExecutionResult {
+            sucess: false,
+            exit_code: 1,
+            message: format!("Path {path} not found"),
+            command_execution_output: None,
+        };
     }
 }

@@ -20,7 +20,11 @@ use std::process;
 use clap::{Parser, Subcommand};
 
 // Our things 👥
-mod operations;
+mod dw_commands_operations;
+mod dw_core_functions;
+mod dw_models;
+
+use dw_models::CoreFunctionExecutionResult;
 
 #[derive(Parser, Debug)]
 #[command(name = "dw", about = "Daily Wallpaper Manager")]
@@ -66,26 +70,76 @@ enum Commands {
 fn main() {
     let cli = Cli::parse();
     let res;
+
     match &cli.command {
-        Commands::AddWallpaper { path } => res = operations::add_wallpaper(path),
+        Commands::AddWallpaper { path } => {
+            res = CoreFunctionExecutionResult {
+                sucess: true,
+                exit_code: 0,
+                message: format!("Sucess"),
+                command_execution_output: None,
+            }
+        }
 
-        Commands::RemoveWallpaper { path } => res = operations::remove_wallpaper(path),
+        Commands::RemoveWallpaper { path } => {
+            res = CoreFunctionExecutionResult {
+                sucess: true,
+                exit_code: 0,
+                message: format!("Sucess"),
+                command_execution_output: None,
+            }
+        }
 
-        Commands::Preset { preset, interval } => res = operations::set_preset(preset, *interval),
+        Commands::Preset { preset, interval } => {
+            res = CoreFunctionExecutionResult {
+                sucess: true,
+                exit_code: 0,
+                message: format!("Sucess"),
+                command_execution_output: None,
+            }
+        }
 
-        Commands::Next => res = operations::set_next_wallpaper(),
+        Commands::Next => {
+            res = CoreFunctionExecutionResult {
+                sucess: true,
+                exit_code: 0,
+                message: format!("Sucess"),
+                command_execution_output: None,
+            }
+        }
 
-        Commands::Reset => res = operations::reset_wallpaper_cycle(),
+        Commands::Reset => {
+            res = CoreFunctionExecutionResult {
+                sucess: true,
+                exit_code: 0,
+                message: format!("Sucess"),
+                command_execution_output: None,
+            }
+        }
 
-        Commands::Set { path } => res = operations::set_wallpaper(path),
+        Commands::Set { path } => res = dw_commands_operations::set_wallpaper(path),
 
-        Commands::Off => res = operations::disable_wallpapers(),
+        Commands::Off => {
+            res = CoreFunctionExecutionResult {
+                sucess: true,
+                exit_code: 0,
+                message: format!("Sucess"),
+                command_execution_output: None,
+            }
+        }
 
-        Commands::On => res = operations::enable_wallpapers(),
+        Commands::On => {
+            res = CoreFunctionExecutionResult {
+                sucess: true,
+                exit_code: 0,
+                message: format!("Sucess"),
+                command_execution_output: None,
+            }
+        }
     };
-    
-    if let Err(err) = res {
-        eprintln!("Erro: {}", err);
-        process::exit(1);
+
+    if !res.sucess {
+        eprint!("{}", res.message);
+        process::exit(res.exit_code as i32);
     }
 }

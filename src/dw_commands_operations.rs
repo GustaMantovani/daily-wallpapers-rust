@@ -12,55 +12,60 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// src/operations.rs
+// src/dw_commands_operations.rs
 
 // Our things 👥
-#[path = "./dw_core.rs"]
-mod dw_core;
+use crate::dw_core_functions;
+use crate::dw_models::CoreFunctionExecutionResult;
 
-pub fn add_wallpaper(path: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn set_wallpaper(path: &String) -> CoreFunctionExecutionResult {
+    println!("Setting {} as wallpaper", path);
+    return dw_core_functions::change_wallpaper(path);
+}
+
+/*pub fn add_wallpaper(path: &str) -> CoreFunctionExecutionResult {
     println!("Adding wallpaper: {}", path);
     // Implementação da função...
-    Ok(())
+
 }
 
-pub fn remove_wallpaper(path: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn remove_wallpaper(path: &str) -> CoreFunctionExecutionResult {
     println!("Removing wallpaper: {}", path);
     // Implementação da função...
-    Ok(())
+
 }
 
-pub fn set_preset(preset: &str, interval: Option<u64>) -> Result<(), Box<dyn std::error::Error>> {
+pub fn set_preset(preset: &str, interval: Option<u64>) -> CoreFunctionExecutionResult {
     println!("Setting preset: {} with interval: {:?}", preset, interval);
     // Implementação da função...
-    Ok(())
+
 }
 
-pub fn set_next_wallpaper() -> Result<(), Box<dyn std::error::Error>> {
+pub fn set_next_wallpaper() -> CoreFunctionExecutionResult {
     println!("Setting the next wallpaper");
     // Implementação da função...
-    Ok(())
+
 }
 
-pub fn reset_wallpaper_cycle() -> Result<(), Box<dyn std::error::Error>> {
+pub fn reset_wallpaper_cycle() -> CoreFunctionExecutionResult {
     println!("Setting the first wallpapers");
     // Implementação da função...
-    Ok(())
+
 }
 
-pub fn set_wallpaper(path: &String) -> Result<(), Box<dyn std::error::Error>> {
+pub fn set_wallpaper(path: &String) -> CoreFunctionExecutionResult {
     println!("Setting {} as wallpaper", path);
     return dw_core::change_wallpaper(path);
 }
 
-pub fn disable_wallpapers() -> Result<(), Box<dyn std::error::Error>> {
+pub fn disable_wallpapers() -> CoreFunctionExecutionResult {
     println!("Disabling daily wallpapers");
     // Implementação da função...
-    Ok(())
+
 }
 
-pub fn enable_wallpapers() -> Result<(), Box<dyn std::error::Error>> {
+pub fn enable_wallpapers() -> CoreFunctionExecutionResult {
     println!("Enabling daily wallpapers");
     // Implementação da função...
-    Ok(())
-}
+
+}*/
