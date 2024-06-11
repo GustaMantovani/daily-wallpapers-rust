@@ -17,7 +17,7 @@
 use std::process;
 
 // External 👽️
-use clap::{Parser, Subcommand};
+use clap::Parser;
 
 // Our things 👥
 mod dw_commands_operations;
