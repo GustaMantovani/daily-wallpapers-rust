@@ -17,7 +17,7 @@
 use std::process::Output;
 
 #[derive(Debug)]
-pub struct CoreFunctionExecutionResult {
+pub struct DwExecuionResult {
     pub sucess: bool,
     pub exit_code: u8,
     pub message: String,

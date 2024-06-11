@@ -18,11 +18,11 @@ use std::path::Path;
 use std::process::Command;
 
 // Our things 👥
-use crate::dw_models::CoreFunctionExecutionResult;
+use crate::dw_models::DwExecuionResult;
 
-pub fn change_wallpaper(path: &str) -> CoreFunctionExecutionResult {
+pub fn change_wallpaper(path: &str) -> DwExecuionResult {
     if !Path::new(path).exists() {
-        return CoreFunctionExecutionResult {
+        return DwExecuionResult {
             sucess: false,
             exit_code: 1,
             message: format!("Path {path} not found"),
@@ -42,14 +42,14 @@ pub fn change_wallpaper(path: &str) -> CoreFunctionExecutionResult {
         .expect(&format!("Failed to execute the process bash -c {command}"));
 
     if output.status.success() {
-        return CoreFunctionExecutionResult {
+        return DwExecuionResult {
             sucess: true,
             exit_code: 0,
             message: format!("Sucess"),
             command_execution_output: Some(output),
         };
     } else {
-        return CoreFunctionExecutionResult {
+        return DwExecuionResult {
             sucess: false,
             exit_code: 1,
             message: format!("Path {path} not found"),

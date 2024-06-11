@@ -24,7 +24,7 @@ mod dw_commands_operations;
 mod dw_core_functions;
 mod dw_models;
 
-use dw_models::CoreFunctionExecutionResult;
+use dw_models::DwExecuionResult;
 
 #[derive(Parser, Debug)]
 #[command(name = "dw", about = "Daily Wallpaper Manager")]
@@ -73,7 +73,7 @@ fn main() {
 
     match &cli.command {
         Commands::AddWallpaper { path } => {
-            res = CoreFunctionExecutionResult {
+            res = DwExecuionResult {
                 sucess: true,
                 exit_code: 0,
                 message: format!("Sucess"),
@@ -82,7 +82,7 @@ fn main() {
         }
 
         Commands::RemoveWallpaper { path } => {
-            res = CoreFunctionExecutionResult {
+            res = DwExecuionResult {
                 sucess: true,
                 exit_code: 0,
                 message: format!("Sucess"),
@@ -91,7 +91,7 @@ fn main() {
         }
 
         Commands::Preset { preset, interval } => {
-            res = CoreFunctionExecutionResult {
+            res = DwExecuionResult {
                 sucess: true,
                 exit_code: 0,
                 message: format!("Sucess"),
@@ -100,7 +100,7 @@ fn main() {
         }
 
         Commands::Next => {
-            res = CoreFunctionExecutionResult {
+            res = DwExecuionResult {
                 sucess: true,
                 exit_code: 0,
                 message: format!("Sucess"),
@@ -109,7 +109,7 @@ fn main() {
         }
 
         Commands::Reset => {
-            res = CoreFunctionExecutionResult {
+            res = DwExecuionResult {
                 sucess: true,
                 exit_code: 0,
                 message: format!("Sucess"),
@@ -120,7 +120,7 @@ fn main() {
         Commands::Set { path } => res = dw_commands_operations::set_wallpaper(path),
 
         Commands::Off => {
-            res = CoreFunctionExecutionResult {
+            res = DwExecuionResult {
                 sucess: true,
                 exit_code: 0,
                 message: format!("Sucess"),
@@ -129,7 +129,7 @@ fn main() {
         }
 
         Commands::On => {
-            res = CoreFunctionExecutionResult {
+            res = DwExecuionResult {
                 sucess: true,
                 exit_code: 0,
                 message: format!("Sucess"),

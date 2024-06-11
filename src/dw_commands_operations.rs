@@ -16,9 +16,9 @@
 
 // Our things 👥
 use crate::dw_core_functions;
-use crate::dw_models::CoreFunctionExecutionResult;
+use crate::dw_models::DwExecuionResult;
 
-pub fn set_wallpaper(path: &String) -> CoreFunctionExecutionResult {
+pub fn set_wallpaper(path: &String) -> DwExecuionResult {
     println!("Setting {} as wallpaper", path);
     return dw_core_functions::change_wallpaper(path);
 }
