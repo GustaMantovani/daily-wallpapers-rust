@@ -16,10 +16,54 @@
 
 use std::process::Output;
 
+// External 👽️
+use clap::{Parser, Subcommand};
+
 #[derive(Debug)]
 pub struct DwExecuionResult {
     pub sucess: bool,
     pub exit_code: u8,
     pub message: String,
     pub sys_commando_execution_output: Option<Output>,
+}
+
+#[derive(Parser, Debug)]
+#[command(name = "dw", about = "Daily Wallpaper Manager")]
+pub struct Cli {
+    #[command(subcommand)]
+    pub command: Commands,
+}
+
+#[derive(Subcommand, Debug)]
+pub enum Commands {
+    #[command(about = "Add a wallpaper or directory to wallpapers cycle")]
+    AddWallpaper {
+        #[arg()]
+        path: String,
+    },
+    #[command(about = "Remove a wallpaper or directory from wallpapers cycle")]
+    RemoveWallpaper {
+        #[arg()]
+        path: String,
+    },
+    #[command(about = "Set time preset to wallpaper change")]
+    Preset {
+        #[arg()]
+        preset: String,
+        #[arg(
+            required_if_eq("preset", "by minutes"),
+            required_if_eq("preset", "by hours")
+        )]
+        interval: Option<u64>,
+    },
+    #[command(about = "Set the first wallpaper in the cycle and reset")]
+    Reset,
+    #[command(about = "Sets a specific wallpaper, but does not change the cycle")]
+    Set { path: String },
+    #[command(about = "Set the next wallpaper in the cycle")]
+    Next,
+    #[command(about = "Disable daily wallpapers")]
+    Off,
+    #[command(about = "Enable daily wallpapers")]
+    On,
 }

@@ -25,47 +25,7 @@ mod dw_core_functions;
 mod dw_models;
 
 use dw_models::DwExecuionResult;
-
-#[derive(Parser, Debug)]
-#[command(name = "dw", about = "Daily Wallpaper Manager")]
-struct Cli {
-    #[command(subcommand)]
-    command: Commands,
-}
-
-#[derive(Subcommand, Debug)]
-enum Commands {
-    #[command(about = "Add a wallpaper or directory to wallpapers cycle")]
-    AddWallpaper {
-        #[arg()]
-        path: String,
-    },
-    #[command(about = "Remove a wallpaper or directory from wallpapers cycle")]
-    RemoveWallpaper {
-        #[arg()]
-        path: String,
-    },
-    #[command(about = "Set time preset to wallpaper change")]
-    Preset {
-        #[arg()]
-        preset: String,
-        #[arg(
-            required_if_eq("preset", "by minutes"),
-            required_if_eq("preset", "by hours")
-        )]
-        interval: Option<u64>,
-    },
-    #[command(about = "Set the first wallpaper in the cycle and reset")]
-    Reset,
-    #[command(about = "Sets a specific wallpaper, but does not change the cycle")]
-    Set { path: String },
-    #[command(about = "Set the next wallpaper in the cycle")]
-    Next,
-    #[command(about = "Disable daily wallpapers")]
-    Off,
-    #[command(about = "Enable daily wallpapers")]
-    On,
-}
+use dw_models::{Cli, Commands};
 
 fn main() {
     let cli = Cli::parse();
