@@ -77,7 +77,7 @@ fn main() {
                 sucess: true,
                 exit_code: 0,
                 message: format!("Sucess"),
-                command_execution_output: None,
+                sys_commando_execution_output: None,
             }
         }
 
@@ -86,7 +86,7 @@ fn main() {
                 sucess: true,
                 exit_code: 0,
                 message: format!("Sucess"),
-                command_execution_output: None,
+                sys_commando_execution_output: None,
             }
         }
 
@@ -95,7 +95,7 @@ fn main() {
                 sucess: true,
                 exit_code: 0,
                 message: format!("Sucess"),
-                command_execution_output: None,
+                sys_commando_execution_output: None,
             }
         }
 
@@ -104,7 +104,7 @@ fn main() {
                 sucess: true,
                 exit_code: 0,
                 message: format!("Sucess"),
-                command_execution_output: None,
+                sys_commando_execution_output: None,
             }
         }
 
@@ -113,7 +113,7 @@ fn main() {
                 sucess: true,
                 exit_code: 0,
                 message: format!("Sucess"),
-                command_execution_output: None,
+                sys_commando_execution_output: None,
             }
         }
 
@@ -124,7 +124,7 @@ fn main() {
                 sucess: true,
                 exit_code: 0,
                 message: format!("Sucess"),
-                command_execution_output: None,
+                sys_commando_execution_output: None,
             }
         }
 
@@ -133,7 +133,7 @@ fn main() {
                 sucess: true,
                 exit_code: 0,
                 message: format!("Sucess"),
-                command_execution_output: None,
+                sys_commando_execution_output: None,
             }
         }
     };

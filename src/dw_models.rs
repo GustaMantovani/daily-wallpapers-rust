@@ -21,5 +21,5 @@ pub struct DwExecuionResult {
     pub sucess: bool,
     pub exit_code: u8,
     pub message: String,
-    pub command_execution_output: Option<Output>,
+    pub sys_commando_execution_output: Option<Output>,
 }

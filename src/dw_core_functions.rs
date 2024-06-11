@@ -26,7 +26,7 @@ pub fn change_wallpaper(path: &str) -> DwExecuionResult {
             sucess: false,
             exit_code: 1,
             message: format!("Path {path} not found"),
-            command_execution_output: None,
+            sys_commando_execution_output: None,
         };
     }
 
@@ -46,14 +46,14 @@ pub fn change_wallpaper(path: &str) -> DwExecuionResult {
             sucess: true,
             exit_code: 0,
             message: format!("Sucess"),
-            command_execution_output: Some(output),
+            sys_commando_execution_output: Some(output),
         };
     } else {
         return DwExecuionResult {
             sucess: false,
             exit_code: 1,
             message: format!("Path {path} not found"),
-            command_execution_output: None,
+            sys_commando_execution_output: None,
         };
     }
 }
