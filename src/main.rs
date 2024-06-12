@@ -14,92 +14,90 @@
 
 // src/main.rs
 
-use std::process;
+mod core;
+mod models;
+mod operations;
 
-// External 👽️
+use crate::models::{Cli, Commands, DwOperationExecuionResult};
+use crate::operations::set_wallpaper;
 use clap::Parser;
+use std::process::ExitCode;
 
-// Our things 👥
-mod dw_commands_operations;
-mod dw_core_functions;
-mod dw_models;
-
-use dw_models::DwExecuionResult;
-use dw_models::{Cli, Commands};
-
-fn main() {
-    let cli = Cli::parse();
-    let res;
+fn main() -> ExitCode {
+    let cli: Cli = Cli::parse();
+    let operation_res;
 
     match &cli.command {
-        Commands::AddWallpaper { path } => {
-            res = DwExecuionResult {
-                sucess: true,
+        Commands::AddWallpaper { path: _ } => {
+            operation_res = DwOperationExecuionResult {
+                success: true,
                 exit_code: 0,
-                message: format!("Sucess"),
-                sys_commando_execution_output: None,
+                message: None,
             }
         }
 
-        Commands::RemoveWallpaper { path } => {
-            res = DwExecuionResult {
-                sucess: true,
+        Commands::RemoveWallpaper { path: _ } => {
+            operation_res = DwOperationExecuionResult {
+                success: true,
                 exit_code: 0,
-                message: format!("Sucess"),
-                sys_commando_execution_output: None,
+                message: None,
             }
         }
 
-        Commands::Preset { preset, interval } => {
-            res = DwExecuionResult {
-                sucess: true,
+        Commands::Preset {
+            preset: _,
+            interval: _,
+        } => {
+            operation_res = DwOperationExecuionResult {
+                success: true,
                 exit_code: 0,
-                message: format!("Sucess"),
-                sys_commando_execution_output: None,
+                message: None,
             }
         }
 
         Commands::Next => {
-            res = DwExecuionResult {
-                sucess: true,
+            operation_res = DwOperationExecuionResult {
+                success: true,
                 exit_code: 0,
-                message: format!("Sucess"),
-                sys_commando_execution_output: None,
+                message: None,
             }
         }
 
         Commands::Reset => {
-            res = DwExecuionResult {
-                sucess: true,
+            operation_res = DwOperationExecuionResult {
+                success: true,
                 exit_code: 0,
-                message: format!("Sucess"),
-                sys_commando_execution_output: None,
+                message: None,
             }
         }
 
-        Commands::Set { path } => res = dw_commands_operations::set_wallpaper(path),
+        Commands::Set { path } => {
+            operation_res = set_wallpaper(path);
+        }
 
         Commands::Off => {
-            res = DwExecuionResult {
-                sucess: true,
+            operation_res = DwOperationExecuionResult {
+                success: true,
                 exit_code: 0,
-                message: format!("Sucess"),
-                sys_commando_execution_output: None,
+                message: None,
             }
         }
 
         Commands::On => {
-            res = DwExecuionResult {
-                sucess: true,
+            operation_res = DwOperationExecuionResult {
+                success: true,
                 exit_code: 0,
-                message: format!("Sucess"),
-                sys_commando_execution_output: None,
+                message: None,
             }
         }
     };
 
-    if !res.sucess {
-        eprint!("{}", res.message);
-        process::exit(res.exit_code as i32);
+    //Direcionando mensagem de saída
+    if operation_res.success {
+        print!("{:?}", operation_res);
+        return ExitCode::SUCCESS;
+    } else {
+        eprint!("{:?}", operation_res);
+        return ExitCode::FAILURE;
     }
 }

@@ -12,21 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// src/dw_models.rs
+// src/models.rs
 
-use std::process::Output;
-
-// External 👽️
 use clap::{Parser, Subcommand};
 
 #[derive(Debug)]
-pub struct DwExecuionResult {
-    pub sucess: bool,
-    pub exit_code: u8,
-    pub message: String,
-    pub sys_commando_execution_output: Option<Output>,
+pub struct DwOperationExecuionResult {
+    pub success: bool,
+    pub exit_code: i32,
+    pub message: Option<String>,
 }
 
+// Clap models
 #[derive(Parser, Debug)]
 #[command(name = "dw", about = "Daily Wallpaper Manager")]
 pub struct Cli {
