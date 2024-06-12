@@ -14,11 +14,9 @@
 
 // src/core.rs
 
-use std::{error::Error, fs, path::Path, process::Command};
-
-use crate::models::DwConfig;
-use std::fs::File;
-use std::io::Write;
+use crate::models::{DwConfig, DwWallpaperCandidate};
+use chrono::Local;
+use std::{error::Error, fs, fs::File, io::Write, path::Path, process::Command};
 
 pub fn change_wallpaper(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
     if !path.exists() {
@@ -60,4 +58,42 @@ pub fn write_config_json(config: DwConfig) -> Result<(), Box<dyn Error>> {
     file.write_all(json_data.as_bytes())?;
 
     Ok(())
+}
+
+pub fn init() -> Result<(), Box<dyn std::error::Error>> {
+    let path = "./config/config.json";
+
+    if !Path::new(path).exists() {
+        let mkdir_config_execution_output = Command::new("sh")
+            .args(["-c", "mkdir -p config"])
+            .output()
+            .map_err(|e| format!("Failed to execute process: {}", e))?;
+
+        if mkdir_config_execution_output.status.success() {
+            let touch_config_json_execution_output = Command::new("sh")
+                .args(["-c", "touch config/config.json"])
+                .output()
+                .map_err(|e| format!("Failed to execute process: {}", e))?;
+
+            if touch_config_json_execution_output.status.success() {
+                let empty_config = DwConfig {
+                    actual_wallpaper: DwWallpaperCandidate {
+                        path: "".to_string(),
+                        date_set: Local::now(),
+                        child: false,
+                    },
+                    preset: crate::models::DwPreset::DAY,
+                    candidates: Vec::new(),
+                };
+
+                return write_config_json(empty_config);
+            } else {
+                return Err("The command to crate config.json file failed.".into());
+            }
+        } else {
+            return Err("The command to crate config directory failed.".into());
+        }
+    }
+
+    return Ok(());
 }

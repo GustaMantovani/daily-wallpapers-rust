@@ -14,43 +14,57 @@
 
 // src/operations.rs
 
-use crate::core::{change_wallpaper, read_config_json};
-use crate::models::DwOperationExecuionResult;
+use crate::core::{change_wallpaper, init, read_config_json};
+use crate::models::DwOperationExecutionResult;
 use std::path::Path;
 
-pub fn set_wallpaper(path: &String) -> DwOperationExecuionResult {
-    // Chama a função change_wallpaper e captura o resultado
+pub fn set_wallpaper(path: &String) -> DwOperationExecutionResult {
     match change_wallpaper(Path::new(path)) {
-        Ok(_) => DwOperationExecuionResult {
+        Ok(_) => DwOperationExecutionResult {
             success: true,
             exit_code: 0,
             message: None,
         },
-        Err(err) => {
-            DwOperationExecuionResult {
-                success: false,
-                exit_code: 1,
-                message: Some(err.to_string()), // Converte o erro para String
-            }
-        }
+        Err(err) => DwOperationExecutionResult {
+            success: false,
+            exit_code: 1,
+            message: Some(err.to_string()),
+        },
     }
 }
 
-pub fn show_config() -> DwOperationExecuionResult {
-    let res_open_config = read_config_json();
-
-    match res_open_config {
+pub fn show_config() -> DwOperationExecutionResult {
+    match read_config_json() {
         Ok(config) => {
-            return DwOperationExecuionResult {
+            return DwOperationExecutionResult {
                 success: true,
                 exit_code: 0,
                 message: Some(serde_json::to_string_pretty(&config).unwrap()),
             };
         }
         Err(e) => {
-            return DwOperationExecuionResult {
+            return DwOperationExecutionResult {
                 success: false,
                 exit_code: 2,
+                message: Some(e.to_string()),
+            };
+        }
+    }
+}
+
+pub fn perform_init() -> DwOperationExecutionResult {
+    match init() {
+        Ok(_) => {
+            return DwOperationExecutionResult {
+                success: true,
+                exit_code: 0,
+                message: None,
+            };
+        }
+        Err(e) => {
+            return DwOperationExecutionResult {
+                success: false,
+                exit_code: 4,
                 message: Some(e.to_string()),
             };
         }

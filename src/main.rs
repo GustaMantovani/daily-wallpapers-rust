@@ -18,8 +18,8 @@ mod core;
 mod models;
 mod operations;
 
-use crate::models::{Cli, Commands, DwOperationExecuionResult};
-use crate::operations::{set_wallpaper, show_config};
+use crate::models::{Cli, Commands, DwOperationExecutionResult};
+use crate::operations::{perform_init, set_wallpaper, show_config};
 use clap::Parser;
 use std::process::ExitCode;
 
@@ -29,7 +29,7 @@ fn main() -> ExitCode {
 
     match &cli.command {
         Commands::AddWallpaper { path: _ } => {
-            operation_res = DwOperationExecuionResult {
+            operation_res = DwOperationExecutionResult {
                 success: true,
                 exit_code: 0,
                 message: None,
@@ -37,7 +37,7 @@ fn main() -> ExitCode {
         }
 
         Commands::RemoveWallpaper { path: _ } => {
-            operation_res = DwOperationExecuionResult {
+            operation_res = DwOperationExecutionResult {
                 success: true,
                 exit_code: 0,
                 message: None,
@@ -48,7 +48,7 @@ fn main() -> ExitCode {
             preset: _,
             interval: _,
         } => {
-            operation_res = DwOperationExecuionResult {
+            operation_res = DwOperationExecutionResult {
                 success: true,
                 exit_code: 0,
                 message: None,
@@ -56,7 +56,7 @@ fn main() -> ExitCode {
         }
 
         Commands::Next => {
-            operation_res = DwOperationExecuionResult {
+            operation_res = DwOperationExecutionResult {
                 success: true,
                 exit_code: 0,
                 message: None,
@@ -64,19 +64,19 @@ fn main() -> ExitCode {
         }
 
         Commands::Reset => {
-            operation_res = DwOperationExecuionResult {
+            operation_res = DwOperationExecutionResult {
                 success: true,
                 exit_code: 0,
                 message: None,
             }
         }
 
-        Commands::Set { path } => {
+        Commands::SetWallpaper { path } => {
             operation_res = set_wallpaper(path);
         }
 
         Commands::Off => {
-            operation_res = DwOperationExecuionResult {
+            operation_res = DwOperationExecutionResult {
                 success: true,
                 exit_code: 0,
                 message: None,
@@ -84,7 +84,7 @@ fn main() -> ExitCode {
         }
 
         Commands::On => {
-            operation_res = DwOperationExecuionResult {
+            operation_res = DwOperationExecutionResult {
                 success: true,
                 exit_code: 0,
                 message: None,
@@ -94,9 +94,20 @@ fn main() -> ExitCode {
         Commands::ShowConfig => {
             operation_res = show_config();
         }
+
+        Commands::SetConfig => {
+            operation_res = DwOperationExecutionResult {
+                success: true,
+                exit_code: 0,
+                message: None,
+            }
+        }
+
+        Commands::Init => {
+            operation_res = perform_init();
+        }
     };
 
-    //Direcionando mensagem de saída
     if operation_res.success {
         print!("{:?}", operation_res);
         return ExitCode::SUCCESS;

@@ -19,7 +19,7 @@ use clap::{Parser, Subcommand};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug)]
-pub struct DwOperationExecuionResult {
+pub struct DwOperationExecutionResult {
     pub success: bool,
     pub exit_code: i32,
     pub message: Option<String>,
@@ -79,7 +79,7 @@ pub enum Commands {
     #[command(about = "Set the first wallpaper in the cycle and reset")]
     Reset,
     #[command(about = "Sets a specific wallpaper, but does not change the cycle")]
-    Set { path: String },
+    SetWallpaper { path: String },
     #[command(about = "Set the next wallpaper in the cycle")]
     Next,
     #[command(about = "Disable daily wallpapers")]
@@ -88,4 +88,10 @@ pub enum Commands {
     On,
     #[command(about = "Shows daily wallpapers config.json")]
     ShowConfig,
+    #[command(
+        about = "Sets a json file as the config file of the program. If json file is not present in argument, this commands will create an empty config.json"
+    )]
+    SetConfig,
+    #[command(about = "Performs first time setup")]
+    Init,
 }
