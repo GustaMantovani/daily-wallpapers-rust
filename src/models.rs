@@ -29,7 +29,7 @@ pub struct DwOperationExecuionResult {
 
 pub struct DwWallpaperCandidate {
     pub path: String,
-    pub setted: DateTime<Local>,
+    pub date_set: DateTime<Local>,
     pub child: bool,
 }
 
