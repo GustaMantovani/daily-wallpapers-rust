@@ -14,11 +14,15 @@
 
 // src/core.rs
 
-use std::{path::Path, process::Command};
+use std::{error::Error, fs, path::Path, process::Command};
+
+use crate::models::DwConfig;
+use std::fs::File;
+use std::io::Write;
 
 pub fn change_wallpaper(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
     if !path.exists() {
-        return Err("O caminho do arquivo não existe".into());
+        return Err("The specified file path does not exist.".into());
     }
 
     let command = format!(
@@ -29,11 +33,31 @@ pub fn change_wallpaper(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
     let command_execution_output = Command::new("sh")
         .args(["-c", &command])
         .output()
-        .expect("failed to execute process");
+        .map_err(|e| format!("Failed to execute process: {}", e))?;
 
     if command_execution_output.status.success() {
         Ok(())
     } else {
-        Err("O comando para alterar o papel de parede falhou".into())
+        Err("The command to change the wallpaper failed.".into())
     }
+}
+
+pub fn read_config_json() -> Result<DwConfig, Box<dyn Error>> {
+    let path = "./config/config.json";
+
+    let contents =
+        fs::read_to_string(&path).map_err(|e| format!("Failed to read file {}: {}", path, e))?;
+    let config: DwConfig =
+        serde_json::from_str(&contents).map_err(|e| format!("Failed to parse JSON: {}", e))?;
+    Ok(config)
+}
+
+pub fn write_config_json(config: DwConfig) -> Result<(), Box<dyn Error>> {
+    let path = "./config/config.json";
+
+    let json_data = serde_json::to_string_pretty(&config)?;
+    let mut file = File::create(path)?;
+    file.write_all(json_data.as_bytes())?;
+
+    Ok(())
 }

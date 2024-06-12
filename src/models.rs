@@ -14,13 +14,36 @@
 
 // src/models.rs
 
+use chrono::{DateTime, Local};
 use clap::{Parser, Subcommand};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug)]
 pub struct DwOperationExecuionResult {
     pub success: bool,
     pub exit_code: i32,
     pub message: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+
+pub struct DwWallpaperCandidate {
+    pub path: String,
+    pub setted: DateTime<Local>,
+    pub child: bool,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum DwPreset {
+    HOUR,
+    MINUTE,
+    DAY,
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct DwConfig {
+    pub actual_wallpaper: DwWallpaperCandidate,
+    pub preset: DwPreset,
+    pub candidates: Vec<String>,
 }
 
 // Clap models
@@ -63,4 +86,6 @@ pub enum Commands {
     Off,
     #[command(about = "Enable daily wallpapers")]
     On,
+    #[command(about = "Shows daily wallpapers config.json")]
+    ShowConfig,
 }
