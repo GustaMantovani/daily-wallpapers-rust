@@ -97,3 +97,12 @@ pub fn init() -> Result<(), Box<dyn std::error::Error>> {
 
     return Ok(());
 }
+
+pub fn change_config_file(new_config_path: &Path) -> Result<(), Box<dyn std::error::Error>>{
+    if !new_config_path.exists(){
+        return Err("The specified file path does not exist.".into());
+    }
+
+    return Ok(());
+
+}

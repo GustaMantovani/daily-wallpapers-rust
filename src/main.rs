@@ -95,7 +95,7 @@ fn main() -> ExitCode {
             operation_res = show_config();
         }
 
-        Commands::SetConfig => {
+        Commands::SetConfig{path} => {
             operation_res = DwOperationExecutionResult {
                 success: true,
                 exit_code: 0,
