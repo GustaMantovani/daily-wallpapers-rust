@@ -14,7 +14,7 @@
 
 // src/operations.rs
 
-use crate::core::{change_wallpaper, init, read_config_json};
+use crate::core::{change_config_file, change_wallpaper, init, read_config_json};
 use crate::models::DwOperationExecutionResult;
 use std::path::Path;
 
@@ -34,7 +34,7 @@ pub fn set_wallpaper(path: &String) -> DwOperationExecutionResult {
 }
 
 pub fn show_config() -> DwOperationExecutionResult {
-    match read_config_json() {
+    match read_config_json(&"./config/config.json".to_string()) {
         Ok(config) => {
             return DwOperationExecutionResult {
                 success: true,
@@ -65,6 +65,26 @@ pub fn perform_init() -> DwOperationExecutionResult {
             return DwOperationExecutionResult {
                 success: false,
                 exit_code: 4,
+                message: Some(e.to_string()),
+            };
+        }
+    }
+}
+
+pub fn set_config(path: &String) -> DwOperationExecutionResult {
+    match change_config_file(Path::new(&path)) {
+        Ok(_) => {
+            return DwOperationExecutionResult {
+                success: true,
+                exit_code: 0,
+                message: None,
+            };
+        }
+
+        Err(e) => {
+            return DwOperationExecutionResult {
+                success: false,
+                exit_code: 5,
                 message: Some(e.to_string()),
             };
         }

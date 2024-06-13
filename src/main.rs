@@ -19,7 +19,7 @@ mod models;
 mod operations;
 
 use crate::models::{Cli, Commands, DwOperationExecutionResult};
-use crate::operations::{perform_init, set_wallpaper, show_config};
+use crate::operations::{perform_init, set_config, set_wallpaper, show_config};
 use clap::Parser;
 use std::process::ExitCode;
 
@@ -95,12 +95,8 @@ fn main() -> ExitCode {
             operation_res = show_config();
         }
 
-        Commands::SetConfig{path} => {
-            operation_res = DwOperationExecutionResult {
-                success: true,
-                exit_code: 0,
-                message: None,
-            }
+        Commands::SetConfig { path } => {
+            operation_res = set_config(path);
         }
 
         Commands::Init => {

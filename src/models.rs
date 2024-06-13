@@ -91,7 +91,7 @@ pub enum Commands {
     #[command(
         about = "Sets a json file as the config file of the program. If json file is not present in argument, this commands will create an empty config.json"
     )]
-    SetConfig{ path: String },
+    SetConfig { path: String },
     #[command(about = "Performs first time setup")]
     Init,
 }

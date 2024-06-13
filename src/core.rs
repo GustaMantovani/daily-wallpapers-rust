@@ -16,10 +16,17 @@
 
 use crate::models::{DwConfig, DwWallpaperCandidate};
 use chrono::Local;
-use std::{error::Error, fs, fs::File, io::Write, path::Path, process::Command};
+use std::{
+    error::Error,
+    fs::{self, File},
+    io::Write,
+    path::Path,
+    process::Command,
+};
 
 pub fn change_wallpaper(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
     if !path.exists() {
+        //gsettings not return error for inexistent paths, so we produce this
         return Err("The specified file path does not exist.".into());
     }
 
@@ -33,16 +40,14 @@ pub fn change_wallpaper(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
         .output()
         .map_err(|e| format!("Failed to execute process: {}", e))?;
 
-    if command_execution_output.status.success() {
-        Ok(())
-    } else {
-        Err("The command to change the wallpaper failed.".into())
+    if !command_execution_output.status.success() {
+        return Err("The command to change the wallpaper failed.".into());
     }
+
+    return Ok(());
 }
 
-pub fn read_config_json() -> Result<DwConfig, Box<dyn Error>> {
-    let path = "./config/config.json";
-
+pub fn read_config_json(path: &String) -> Result<DwConfig, Box<dyn Error>> {
     let contents =
         fs::read_to_string(&path).map_err(|e| format!("Failed to read file {}: {}", path, e))?;
     let config: DwConfig =
@@ -50,9 +55,7 @@ pub fn read_config_json() -> Result<DwConfig, Box<dyn Error>> {
     Ok(config)
 }
 
-pub fn write_config_json(config: DwConfig) -> Result<(), Box<dyn Error>> {
-    let path = "./config/config.json";
-
+pub fn write_config_json(config: DwConfig, path: String) -> Result<(), Box<dyn Error>> {
     let json_data = serde_json::to_string_pretty(&config)?;
     let mut file = File::create(path)?;
     file.write_all(json_data.as_bytes())?;
@@ -61,48 +64,57 @@ pub fn write_config_json(config: DwConfig) -> Result<(), Box<dyn Error>> {
 }
 
 pub fn init() -> Result<(), Box<dyn std::error::Error>> {
-    let path = "./config/config.json";
+    const PATH: &str = "./config/config.json";
 
-    if !Path::new(path).exists() {
-        let mkdir_config_execution_output = Command::new("sh")
-            .args(["-c", "mkdir -p config"])
-            .output()
-            .map_err(|e| format!("Failed to execute process: {}", e))?;
+    let mkdir_config_execution_output = Command::new("sh")
+        .args(["-c", "mkdir -p config"])
+        .output()
+        .map_err(|e| format!("Failed to execute process: {}", e))?;
 
-        if mkdir_config_execution_output.status.success() {
-            let touch_config_json_execution_output = Command::new("sh")
-                .args(["-c", "touch config/config.json"])
+    if !mkdir_config_execution_output.status.success() {
+        return Err("The command to crate config directory failed.".into());
+    }
+
+    let touch_config_json_execution_output = Command::new("sh")
+        .args(["-c", "touch config/config.json"])
+        .output()
+        .map_err(|e| format!("Failed to execute process: {}", e))?;
+
+    if !touch_config_json_execution_output.status.success() {
+        return Err("The command to crate config.json file failed.".into());
+    }
+
+    let empty_config = DwConfig {
+        actual_wallpaper: DwWallpaperCandidate {
+            path: "".to_string(),
+            date_set: Local::now(),
+            child: false,
+        },
+        preset: crate::models::DwPreset::DAY,
+        candidates: Vec::new(),
+    };
+    return write_config_json(empty_config, PATH.to_string());
+}
+
+pub fn change_config_file(new_config_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
+
+    match read_config_json(&format!("{new_config_path:?}")) {
+        Ok(_) => {
+            const PATH: &str = "./config/config.json";
+
+            let res_output_mv_new_config_file = Command::new("sh")
+                .args(["-c", &format!("mv {new_config_path:?} {PATH}")])
                 .output()
                 .map_err(|e| format!("Failed to execute process: {}", e))?;
 
-            if touch_config_json_execution_output.status.success() {
-                let empty_config = DwConfig {
-                    actual_wallpaper: DwWallpaperCandidate {
-                        path: "".to_string(),
-                        date_set: Local::now(),
-                        child: false,
-                    },
-                    preset: crate::models::DwPreset::DAY,
-                    candidates: Vec::new(),
-                };
-
-                return write_config_json(empty_config);
-            } else {
-                return Err("The command to crate config.json file failed.".into());
+            if !res_output_mv_new_config_file.status.success() {
+                return Err("The command to set new config file failed".into());
             }
-        } else {
-            return Err("The command to crate config directory failed.".into());
+
+            return Ok(());
+        }
+        Err(e) => {
+            return Err(e.into());
         }
     }
-
-    return Ok(());
-}
-
-pub fn change_config_file(new_config_path: &Path) -> Result<(), Box<dyn std::error::Error>>{
-    if !new_config_path.exists(){
-        return Err("The specified file path does not exist.".into());
-    }
-
-    return Ok(());
-
 }
