@@ -64,7 +64,7 @@ pub fn perform_init() -> DwOperationExecutionResult {
         Err(e) => {
             return DwOperationExecutionResult {
                 success: false,
-                exit_code: 4,
+                exit_code: 3,
                 message: Some(e.to_string()),
             };
         }
@@ -84,7 +84,7 @@ pub fn set_config(path: &String) -> DwOperationExecutionResult {
         Err(e) => {
             return DwOperationExecutionResult {
                 success: false,
-                exit_code: 5,
+                exit_code: 4,
                 message: Some(e.to_string()),
             };
         }
