@@ -1,4 +1,4 @@
-use crate::models::{DwConfig, DwWallpaperCandidate, DwPreset, DwTimeConfig};
+use crate::models::{DwConfig, DwPreset, DwTimeConfig, DwWallpaperCandidate};
 use chrono::Local;
 use std::{
     error::Error,
@@ -72,7 +72,7 @@ pub fn init() -> Result<(), Box<dyn std::error::Error>> {
             date_set: Local::now(),
             child: false,
         },
-        time_config: DwTimeConfig{
+        time_config: DwTimeConfig {
             preset: DwPreset::DAY,
             interval: 1,
         },

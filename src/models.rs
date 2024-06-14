@@ -41,7 +41,7 @@ pub enum DwPreset {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct DwTimeConfig{
+pub struct DwTimeConfig {
     pub preset: DwPreset,
     pub interval: u8,
 }
