@@ -17,7 +17,7 @@
 use crate::core::{
     change_config_file, change_wallpaper, init, read_config_json, write_config_json,
 };
-use crate::models::DwOperationExecutionResult;
+use crate::models::{DwOperationExecutionResult, DwPreset};
 use std::path::Path;
 
 pub fn set_wallpaper(path: &String) -> DwOperationExecutionResult {
@@ -167,6 +167,63 @@ pub fn rm_wallpaper(path: &String) -> DwOperationExecutionResult {
             return DwOperationExecutionResult {
                 success: false,
                 exit_code: 6,
+                message: Some(e.to_string()),
+            };
+        }
+    }
+}
+
+pub fn set_preset(preset: &str, interval: Option<u8>) -> DwOperationExecutionResult {
+    match read_config_json(&"config/config.json".to_string()) {
+        Ok(mut config) => {
+            let enum_preset;
+
+            match preset {
+                "minute" => {
+                    enum_preset = DwPreset::MINUTE;
+                }
+                "hour" => {
+                    enum_preset = DwPreset::HOUR;
+                }
+                "day" => {
+                    enum_preset = DwPreset::DAY;
+                }
+                _ => {
+                    return DwOperationExecutionResult {
+                        success: false,
+                        exit_code: 9,
+                        message: Some("Invalid preset".to_string()),
+                    };
+                }
+            };
+
+            config.time_config.preset = enum_preset;
+
+            if interval != None {
+                config.time_config.interval = interval.unwrap();
+            }
+
+            match write_config_json(config, "./config/config.json".to_string()) {
+                Ok(_) => {
+                    return DwOperationExecutionResult {
+                        success: true,
+                        exit_code: 0,
+                        message: None,
+                    };
+                }
+                Err(e) => {
+                    return DwOperationExecutionResult {
+                        success: false,
+                        exit_code: 11,
+                        message: Some(e.to_string()),
+                    };
+                }
+            }
+        }
+        Err(e) => {
+            return DwOperationExecutionResult {
+                success: false,
+                exit_code: 8,
                 message: Some(e.to_string()),
             };
         }

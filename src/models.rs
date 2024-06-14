@@ -39,10 +39,16 @@ pub enum DwPreset {
     MINUTE,
     DAY,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct DwTimeConfig{
+    pub preset: DwPreset,
+    pub interval: u8,
+}
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DwConfig {
     pub actual_wallpaper: DwWallpaperCandidate,
-    pub preset: DwPreset,
+    pub time_config: DwTimeConfig,
     pub candidates: Vec<String>,
 }
 
@@ -74,7 +80,7 @@ pub enum Commands {
             required_if_eq("preset", "by minutes"),
             required_if_eq("preset", "by hours")
         )]
-        interval: Option<u64>,
+        interval: Option<u8>,
     },
     #[command(about = "Set the first wallpaper in the cycle and reset")]
     Reset,
