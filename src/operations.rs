@@ -14,7 +14,9 @@
 
 // src/operations.rs
 
-use crate::core::{change_config_file, change_wallpaper, init, read_config_json};
+use crate::core::{
+    change_config_file, change_wallpaper, init, read_config_json, write_config_json,
+};
 use crate::models::DwOperationExecutionResult;
 use std::path::Path;
 
@@ -85,6 +87,86 @@ pub fn set_config(path: &String) -> DwOperationExecutionResult {
             return DwOperationExecutionResult {
                 success: false,
                 exit_code: 4,
+                message: Some(e.to_string()),
+            };
+        }
+    }
+}
+
+pub fn add_wallpaper(path: &String) -> DwOperationExecutionResult {
+    if !Path::new(path).exists() {
+        return DwOperationExecutionResult {
+            success: false,
+            exit_code: 2,
+            message: Some("The specified file or directory does not exist".to_string()),
+        };
+    }
+
+    match read_config_json(&"config/config.json".to_string()) {
+        Ok(mut config) => {
+            config.candidates.push(path.clone());
+
+            match write_config_json(config, "config/config.json".to_string()) {
+                Ok(_) => {
+                    return DwOperationExecutionResult {
+                        success: true,
+                        exit_code: 0,
+                        message: None,
+                    };
+                }
+                Err(e) => {
+                    return DwOperationExecutionResult {
+                        success: false,
+                        exit_code: 5,
+                        message: Some(e.to_string()),
+                    };
+                }
+            }
+        }
+        Err(e) => {
+            return DwOperationExecutionResult {
+                success: false,
+                exit_code: 6,
+                message: Some(e.to_string()),
+            };
+        }
+    }
+}
+
+pub fn rm_wallpaper(path: &String) -> DwOperationExecutionResult {
+    match read_config_json(&"config/config.json".to_string()) {
+        Ok(mut config) => {
+            if let Some(index) = config.candidates.iter().position(|x| x == path) {
+                config.candidates.remove(index);
+
+                match write_config_json(config, "config/config.json".to_string()) {
+                    Ok(_) => {
+                        return DwOperationExecutionResult {
+                            success: true,
+                            exit_code: 0,
+                            message: None,
+                        };
+                    }
+                    Err(e) => {
+                        return DwOperationExecutionResult {
+                            success: false,
+                            exit_code: 5,
+                            message: Some(e.to_string()),
+                        };
+                    }
+                }
+            } else {
+                return DwOperationExecutionResult {
+                    success: false,
+                    exit_code: 7,
+                    message: Some("Wallpaper not found in config".to_string()),
+                };
+            }
+        }
+        Err(e) => {
+            return DwOperationExecutionResult {
+                success: false,
+                exit_code: 6,
                 message: Some(e.to_string()),
             };
         }

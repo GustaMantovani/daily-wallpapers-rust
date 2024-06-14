@@ -10,7 +10,7 @@ use std::{
 
 pub fn change_wallpaper(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
     if !path.exists() {
-        // gsettings não retorna erro para caminhos inexistentes, então produzimos isso
+        // gsettings not return errors for inexistent paths, so we need produce it
         return Err("Error: The specified file path does not exist.".into());
     }
 
@@ -92,17 +92,14 @@ pub fn change_config_file(new_config_path: &Path) -> Result<(), Box<dyn std::err
     const CONFIG_DIR_PATH: &str = "./config";
 
     Command::new("sh")
-    .args([
-        "-c",
-        &format!("mkdir -p {}", CONFIG_DIR_PATH),
-    ])
-    .output()
-    .map_err(|e| {
-        format!(
-            "Error: Failed to create config directory {}: {}",
-            CONFIG_DIR_PATH, e
-        )
-    })?;
+        .args(["-c", &format!("mkdir -p {}", CONFIG_DIR_PATH)])
+        .output()
+        .map_err(|e| {
+            format!(
+                "Error: Failed to create config directory {}: {}",
+                CONFIG_DIR_PATH, e
+            )
+        })?;
 
     Command::new("sh")
         .args([

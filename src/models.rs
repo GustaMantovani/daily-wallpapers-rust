@@ -62,7 +62,7 @@ pub enum Commands {
         path: String,
     },
     #[command(about = "Remove a wallpaper or directory from wallpapers cycle")]
-    RemoveWallpaper {
+    RmWallpaper {
         #[arg()]
         path: String,
     },

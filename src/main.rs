@@ -19,7 +19,7 @@ mod models;
 mod operations;
 
 use crate::models::{Cli, Commands, DwOperationExecutionResult};
-use crate::operations::{perform_init, set_config, set_wallpaper, show_config};
+use crate::operations::{add_wallpaper, perform_init, set_config, set_wallpaper, show_config, rm_wallpaper};
 use clap::Parser;
 use std::process::ExitCode;
 
@@ -28,20 +28,12 @@ fn main() -> ExitCode {
     let operation_res;
 
     match &cli.command {
-        Commands::AddWallpaper { path: _ } => {
-            operation_res = DwOperationExecutionResult {
-                success: true,
-                exit_code: 0,
-                message: None,
-            }
+        Commands::AddWallpaper { path } => {
+            operation_res = add_wallpaper(path);
         }
 
-        Commands::RemoveWallpaper { path: _ } => {
-            operation_res = DwOperationExecutionResult {
-                success: true,
-                exit_code: 0,
-                message: None,
-            }
+        Commands::RmWallpaper { path } => {
+            operation_res = rm_wallpaper(path);
         }
 
         Commands::Preset {
