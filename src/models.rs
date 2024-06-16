@@ -28,6 +28,7 @@ pub struct DwOperationExecutionResult {
 #[derive(Serialize, Deserialize, Debug)]
 
 pub struct DwWallpaperCandidate {
+    pub index: usize,
     pub path: String,
     pub date_set: DateTime<Local>,
     pub child: bool,
@@ -88,6 +89,8 @@ pub enum Commands {
     SetWallpaper { path: String },
     #[command(about = "Set the next wallpaper in the cycle")]
     Next,
+    #[command(about = "Set the previous wallpaper in the cycle")]
+    Previous,
     #[command(about = "Disable daily wallpapers")]
     Off,
     #[command(about = "Enable daily wallpapers")]

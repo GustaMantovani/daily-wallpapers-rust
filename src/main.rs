@@ -20,7 +20,7 @@ mod operations;
 
 use crate::models::{Cli, Commands, DwOperationExecutionResult};
 use crate::operations::{
-    add_wallpaper, perform_init, rm_wallpaper, set_config, set_preset, set_wallpaper, show_config,
+    add_wallpaper, perform_init, rm_wallpaper, set_config, set_preset, set_wallpaper, show_config, previous
 };
 use clap::Parser;
 use std::process::ExitCode;
@@ -49,6 +49,11 @@ fn main() -> ExitCode {
                 message: None,
             }
         }
+
+        Commands::Previous => {
+            operation_res = previous();
+        }
+        
 
         Commands::Reset => {
             operation_res = DwOperationExecutionResult {

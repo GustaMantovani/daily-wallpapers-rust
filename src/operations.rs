@@ -17,6 +17,10 @@
 use crate::core::{
     change_config_file, change_wallpaper, init, read_config_json, write_config_json,
 };
+
+use std::fs;
+use tree_magic;
+
 use crate::models::{DwOperationExecutionResult, DwPreset};
 use std::path::Path;
 
@@ -155,13 +159,12 @@ pub fn rm_wallpaper(path: &String) -> DwOperationExecutionResult {
                         };
                     }
                 }
-            } else {
-                return DwOperationExecutionResult {
-                    success: false,
-                    exit_code: 7,
-                    message: Some("Wallpaper not found in config".to_string()),
-                };
             }
+            return DwOperationExecutionResult {
+                success: false,
+                exit_code: 7,
+                message: Some("Wallpaper not found in config".to_string()),
+            };
         }
         Err(e) => {
             return DwOperationExecutionResult {
@@ -219,6 +222,68 @@ pub fn set_preset(preset: &str, interval: Option<u8>) -> DwOperationExecutionRes
                     };
                 }
             }
+        }
+        Err(e) => {
+            return DwOperationExecutionResult {
+                success: false,
+                exit_code: 8,
+                message: Some(e.to_string()),
+            };
+        }
+    }
+}
+
+pub fn previous() -> DwOperationExecutionResult {
+    match read_config_json("config/config.json") {
+        Ok(config) => {
+            if config.actual_wallpaper.child {
+                if let Some((dir, _file)) = config.actual_wallpaper.path.rsplit_once("/") {
+                    println!("{dir:?} | {}", config.candidates[config.actual_wallpaper.index]);
+                    if Path::new(dir) == Path::new(&config.candidates[config.actual_wallpaper.index]) {
+                        match fs::read_dir(dir) {
+                            Ok(dir) => {
+                                for entry in dir {
+                                    if let Ok(entry) = entry {
+                                        let path = entry.path();
+                                        if path.is_file() {
+                                            let mime_type = tree_magic::from_filepath(path.as_path());
+                                            let mime_type_only = mime_type.split("/").next();
+                                            if let Some(mime_type_only) = mime_type_only {
+                                                if mime_type_only == "image" {
+                                                    println!("{:?} is an image", entry.file_name());
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                return DwOperationExecutionResult {
+                                    success: false,
+                                    exit_code: 19,
+                                    message: Some("Erro ao procurar o caminho para o candidato pai da entrada atual".into()),
+                                };
+                            }
+                            Err(e) => {
+                                return DwOperationExecutionResult {
+                                    success: false,
+                                    exit_code: 16,
+                                    message: Some(format!("{e}")),
+                                };
+                            }
+                        }
+                    }
+                } else {
+                    return DwOperationExecutionResult {
+                        success: false,
+                        exit_code: 17,
+                        message: Some("Erro ao procurar o caminho para o candidato pai da entrada atual".into()),
+                    };
+                }
+            }
+            return DwOperationExecutionResult {
+                success: false,
+                exit_code: 15,
+                message: Some("Erro ao procurar o caminho para o candidato pai da entrada atual".into()),
+            };
         }
         Err(e) => {
             return DwOperationExecutionResult {

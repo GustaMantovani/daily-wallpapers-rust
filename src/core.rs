@@ -68,6 +68,7 @@ pub fn init() -> Result<(), Box<dyn std::error::Error>> {
         .map_err(|e| format!("Error: Failed to create config.json file: {}", e))?;
     let empty_config = DwConfig {
         actual_wallpaper: DwWallpaperCandidate {
+            index: 0,
             path: "".to_string(),
             date_set: Local::now(),
             child: false,
@@ -119,3 +120,4 @@ pub fn change_config_file(new_config_path: &Path) -> Result<(), Box<dyn std::err
 
     Ok(())
 }
+
