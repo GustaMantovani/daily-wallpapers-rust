@@ -54,7 +54,7 @@ fn main() -> ExitCode {
             operation_res = previous();
         }
         
-
+        
         Commands::Reset => {
             operation_res = DwOperationExecutionResult {
                 success: true,

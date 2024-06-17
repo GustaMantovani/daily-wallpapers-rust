@@ -1,5 +1,22 @@
+// Copyright 2024 Gustavo Mantovani
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// src/core.rs
+
 use crate::models::{DwConfig, DwPreset, DwTimeConfig, DwWallpaperCandidate};
 use chrono::Local;
+
 use std::{
     error::Error,
     fs::{self, File},
@@ -72,6 +89,7 @@ pub fn init() -> Result<(), Box<dyn std::error::Error>> {
             path: "".to_string(),
             date_set: Local::now(),
             child: false,
+            sub_index: 0,
         },
         time_config: DwTimeConfig {
             preset: DwPreset::DAY,
@@ -120,4 +138,3 @@ pub fn change_config_file(new_config_path: &Path) -> Result<(), Box<dyn std::err
 
     Ok(())
 }
-

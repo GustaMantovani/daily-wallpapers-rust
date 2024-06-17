@@ -28,10 +28,11 @@ pub struct DwOperationExecutionResult {
 #[derive(Serialize, Deserialize, Debug)]
 
 pub struct DwWallpaperCandidate {
-    pub index: usize,
+    pub index: u8,
     pub path: String,
     pub date_set: DateTime<Local>,
     pub child: bool,
+    pub sub_index: u8,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
