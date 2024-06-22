@@ -15,7 +15,7 @@
 // src/models.rs
 
 use chrono::{DateTime, Local};
-use clap::{Parser, Subcommand};
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug)]
@@ -54,54 +54,3 @@ pub struct DwConfig {
     pub candidates: Vec<String>,
 }
 
-// Clap models
-#[derive(Parser, Debug)]
-#[command(name = "dw", about = "Daily Wallpaper Manager")]
-pub struct Cli {
-    #[command(subcommand)]
-    pub command: Commands,
-}
-
-#[derive(Subcommand, Debug)]
-pub enum Commands {
-    #[command(about = "Add a wallpaper or directory to wallpapers cycle")]
-    AddWallpaper {
-        #[arg()]
-        path: String,
-    },
-    #[command(about = "Remove a wallpaper or directory from wallpapers cycle")]
-    RmWallpaper {
-        #[arg()]
-        path: String,
-    },
-    #[command(about = "Set time preset to wallpaper change")]
-    Preset {
-        #[arg()]
-        preset: String,
-        #[arg(
-            required_if_eq("preset", "by minutes"),
-            required_if_eq("preset", "by hours")
-        )]
-        interval: Option<u8>,
-    },
-    #[command(about = "Set the first wallpaper in the cycle and reset")]
-    Reset,
-    #[command(about = "Sets a specific wallpaper, but does not change the cycle")]
-    SetWallpaper { path: String },
-    #[command(about = "Set the next wallpaper in the cycle")]
-    Next,
-    #[command(about = "Set the previous wallpaper in the cycle")]
-    Previous,
-    #[command(about = "Disable daily wallpapers")]
-    Off,
-    #[command(about = "Enable daily wallpapers")]
-    On,
-    #[command(about = "Shows daily wallpapers config.json")]
-    ShowConfig,
-    #[command(
-        about = "Sets a json file as the config file of the program. If json file is not present in argument, this commands will create an empty config.json"
-    )]
-    SetConfig { path: String },
-    #[command(about = "Performs first time setup")]
-    Init,
-}

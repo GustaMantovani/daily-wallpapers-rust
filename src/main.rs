@@ -16,9 +16,11 @@
 
 mod core;
 mod models;
+mod clap_models;
 mod operations;
 
-use crate::models::{Cli, Commands, DwOperationExecutionResult};
+use crate::clap_models::{Cli, Commands};
+use crate::models::{DwOperationExecutionResult};
 use crate::operations::{
     add_wallpaper, perform_init, rm_wallpaper, set_config, set_preset, set_wallpaper, show_config, previous
 };
