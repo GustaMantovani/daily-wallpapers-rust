@@ -15,7 +15,6 @@
 // src/models.rs
 
 use chrono::{DateTime, Local};
-
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug)]
@@ -53,4 +52,3 @@ pub struct DwConfig {
     pub time_config: DwTimeConfig,
     pub candidates: Vec<String>,
 }
-

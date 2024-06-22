@@ -16,7 +16,6 @@
 
 use crate::models::{DwConfig, DwPreset, DwTimeConfig, DwWallpaperCandidate};
 use chrono::Local;
-
 use std::{
     error::Error,
     fs::{self, File},
@@ -31,7 +30,7 @@ pub fn change_wallpaper(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
         return Err("Error: The specified file path does not exist.".into());
     }
 
-    if tree_magic::from_filepath(path).split("/").next() != Some("image"){
+    if tree_magic::from_filepath(path).split("/").next() != Some("image") {
         return Err("Err: file is not an image".into());
     }
 

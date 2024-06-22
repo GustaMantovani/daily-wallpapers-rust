@@ -17,9 +17,7 @@
 use crate::core::{
     change_config_file, change_wallpaper, init, read_config_json, write_config_json,
 };
-
 use std::fs;
-
 use crate::models::{DwOperationExecutionResult, DwPreset};
 use std::path::Path;
 
@@ -101,6 +99,14 @@ pub fn add_wallpaper(path: &String) -> DwOperationExecutionResult {
         return DwOperationExecutionResult {
             success: false,
             exit_code: 5,
+            message: Some("The specified file or directory does not exist".to_string()),
+        };
+    }
+
+    if tree_magic::from_filepath(Path::new(path)).split("/").next() != Some("image") {
+        return DwOperationExecutionResult {
+            success: false,
+            exit_code: 17,
             message: Some("The specified file or directory does not exist".to_string()),
         };
     }
