@@ -18,7 +18,7 @@ use crate::core::{
     change_config_file, change_wallpaper, init, read_config_json, write_config_json,
 };
 use std::fs;
-use crate::models::{DwOperationExecutionResult, DwPreset};
+use crate::core_models::{DwOperationExecutionResult, DwPreset};
 use std::path::Path;
 
 pub fn set_wallpaper(path: &String) -> DwOperationExecutionResult {

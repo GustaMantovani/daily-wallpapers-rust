@@ -14,7 +14,7 @@
 
 // src/core.rs
 
-use crate::models::{DwConfig, DwPreset, DwTimeConfig, DwWallpaperCandidate};
+use crate::core_models::{DwConfig, DwPreset, DwTimeConfig, DwWallpaperCandidate};
 use chrono::Local;
 use std::{
     error::Error,
