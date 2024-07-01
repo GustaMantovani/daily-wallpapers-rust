@@ -15,7 +15,7 @@
 // src/main.rs
 
 mod clap_models;
-mod core;
+mod core_functions;
 mod core_models;
 mod operations;
 

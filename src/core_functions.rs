@@ -20,7 +20,7 @@ use std::{
     error::Error,
     fs::{self, File},
     io::Write,
-    path::Path,
+    path::{Path, PathBuf},
     process::Command,
 };
 
@@ -140,4 +140,58 @@ pub fn change_config_file(new_config_path: &Path) -> Result<(), Box<dyn std::err
         })?;
 
     Ok(())
+}
+
+pub fn found_wpp_path_by_index_in_directory(dir_path: &Path, index: usize) -> Result<String, Box<dyn Error>> {
+    // Check if the directory exists
+    if !dir_path.is_dir() {
+        return Err(format!("The specified path is not a directory: {}", dir_path.display()).into());
+    }
+
+    // Read the directory contents and filter only image files
+    let mut paths: Vec<_> = fs::read_dir(dir_path)?
+        .filter_map(|entry| entry.ok())
+        .map(|entry| entry.path())
+        .filter(|path| tree_magic::from_filepath(path).starts_with("image/"))
+        .collect();
+
+    // Sort the paths
+    paths.sort();
+
+    // Check if the index is within the range of paths
+    if index >= paths.len() {
+        return Err(format!("Index {} is out of bounds for directory {}", index, dir_path.display()).into());
+    }
+
+    // Return the path corresponding to the index
+    Ok(paths[index].to_string_lossy().to_string())
+}
+
+pub fn found_wpp_index_by_path_in_directory(dir_path: &Path, target_file_name: &str) -> Result<usize, Box<dyn Error>> {
+    // Check if the directory exists
+    if !dir_path.is_dir() {
+        return Err(format!("The specified path is not a directory: {}", dir_path.display()).into());
+    }
+
+    // Read the directory contents and filter only image files
+    let mut paths: Vec<PathBuf> = fs::read_dir(dir_path)?
+        .filter_map(|entry| entry.ok())
+        .map(|entry| entry.path())
+        .filter(|path| tree_magic::from_filepath(path).starts_with("image/"))
+        .collect();
+
+    // Sort the paths
+    paths.sort();
+
+    // Find the index of the target file name
+    match paths.iter().position(|path| {
+        if let Some(file_name) = path.file_name() {
+            file_name == target_file_name
+        } else {
+            false
+        }
+    }) {
+        Some(index) => Ok(index),
+        None => Err(format!("File {} not found in directory {}", target_file_name, dir_path.display()).into())
+    }
 }

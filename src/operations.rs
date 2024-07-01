@@ -14,10 +14,12 @@
 
 // src/operations.rs
 
-use crate::core::{
-    change_config_file, change_wallpaper, init, read_config_json, write_config_json,
+use chrono::Local;
+
+use crate::core_functions::{
+    change_config_file, change_wallpaper, init, read_config_json, write_config_json, found_wpp_path_by_index_in_directory, found_wpp_index_by_path_in_directory
 };
-use std::fs;
+use std::usize;
 use crate::core_models::{DwOperationExecutionResult, DwPreset};
 use std::path::Path;
 
@@ -103,11 +105,11 @@ pub fn add_wallpaper(path: &String) -> DwOperationExecutionResult {
         };
     }
 
-    if tree_magic::from_filepath(Path::new(path)).split("/").next() != Some("image") {
+    if tree_magic::from_filepath(Path::new(path)).split("/").next() != Some("image") && !Path::new(path).is_dir(){
         return DwOperationExecutionResult {
             success: false,
             exit_code: 17,
-            message: Some("The specified file or directory does not exist".to_string()),
+            message: Some("The specified file or directory does isn't an image or directory".to_string()),
         };
     }
 
@@ -240,103 +242,79 @@ pub fn set_preset(preset: &str, interval: Option<u8>) -> DwOperationExecutionRes
 
 pub fn previous() -> DwOperationExecutionResult {
     match read_config_json("config/config.json") {
-        Ok(config) => {
+        Ok(mut config) => {
             let previous_wallpaper_path: String;
+            let mut previous_wallpaper_index: u8 = config.actual_wallpaper.index;
+            let previous_wallpaper_child: bool = config.actual_wallpaper.child;
+            let mut previous_wallpaper_sub_index: u8;
 
-            if config.actual_wallpaper.child {
-                if let Some((wallpaper_dir_path, wallpaper_file_name)) =
-                    config.actual_wallpaper.path.rsplit_once("/")
-                {
-                    if config.actual_wallpaper.sub_index == 0 {
-                        if config.actual_wallpaper.path
-                            == config.candidates[config.actual_wallpaper.index as usize]
-                        {
-                            match config
-                                .candidates
-                                .get((config.actual_wallpaper.index - 1) as usize)
-                            {
-                                Some(_) => {
-                                    previous_wallpaper_path = format!(
-                                        "{}",
-                                        config.candidates
-                                            [(config.actual_wallpaper.index - 1) as usize]
-                                    );
+            if config.actual_wallpaper.child{
+                if let Some((wallpaper_dir_path, wallpaper_file_name)) = config.actual_wallpaper.path.rsplit_once("/"){
+                    println!("\n{} \t {}\n", wallpaper_dir_path, wallpaper_file_name);
+                    match found_wpp_index_by_path_in_directory(Path::new(wallpaper_dir_path), wallpaper_file_name){
+                        Ok(i) => {
+                            if i == 0{
+                                previous_wallpaper_index -= 1;
+                                previous_wallpaper_sub_index = 0;
+                                if Path::new(&config.candidates[(config.actual_wallpaper.index - 1) as usize]).is_dir() {
+                                    previous_wallpaper_path = match found_wpp_path_by_index_in_directory(
+                                        Path::new(&config.candidates[(config.actual_wallpaper.index - 1) as usize]),
+                                        usize::MAX
+                                    ) {
+                                        Ok(path) => path,
+                                        Err(e) => {
+                                            return DwOperationExecutionResult {
+                                                success: false,
+                                                exit_code: 16,
+                                                message: Some(e.to_string()),
+                                            };
+                                        }
+                                    };
+                                } else {
+                                    previous_wallpaper_path = config.candidates[(config.actual_wallpaper.index - 1) as usize].clone();
                                 }
-                                None => {
-                                    previous_wallpaper_path = format!(
-                                        "{}",
-                                        config.candidates
-                                            [(config.actual_wallpaper.index - 1) as usize]
-                                    );
-                                }
+                            }else{
+                                previous_wallpaper_sub_index = (i - 1) as u8;
+                                previous_wallpaper_path = found_wpp_path_by_index_in_directory(Path::new(wallpaper_dir_path), i-1).unwrap().to_string();
                             }
-                        } else {
-                            previous_wallpaper_path = format!(
-                                "{}",
-                                config.candidates[config.actual_wallpaper.index as usize]
-                            );
-                        }
 
+                        }
+                        Err(e) => {
+                            return DwOperationExecutionResult {
+                                success: false,
+                                exit_code: 16,
+                                message: Some(e.to_string()),
+                            };
+                        }
+                    }
+                }else{
+                    return DwOperationExecutionResult {
+                        success: false,
+                        exit_code: 15,
+                        message: Some("Error getting parent candidate path from entry".into()),
+                    };
+                }
+
+                config.actual_wallpaper.path = previous_wallpaper_path.clone();
+                config.actual_wallpaper.date_set = Local::now();
+                config.actual_wallpaper.index = previous_wallpaper_index;
+                config.actual_wallpaper.child = previous_wallpaper_child;
+                config.actual_wallpaper.sub_index = previous_wallpaper_sub_index;
+                
+                match write_config_json(config, "./config/config.json".into()){
+                    Ok(_) => {
                         return set_wallpaper(&previous_wallpaper_path);
                     }
 
-                    println!("{wallpaper_dir_path}");
-                    if Path::new(wallpaper_dir_path)
-                        == Path::new(&config.candidates[config.actual_wallpaper.index as usize])
-                    {
-                        match fs::read_dir(wallpaper_dir_path) {
-                            Ok(dirs) => {
-                                let mut paths: Vec<_> = dirs
-                                    .filter_map(|entry| entry.ok())
-                                    .map(|entry| entry.path())
-                                    .collect();
-
-                                paths.sort();
-
-                                if wallpaper_file_name
-                                    == paths[config.actual_wallpaper.sub_index as usize]
-                                        .file_name()
-                                        .unwrap()
-                                {
-                                    previous_wallpaper_path = format!(
-                                        "{}{}",
-                                        wallpaper_dir_path,
-                                        paths[(config.actual_wallpaper.sub_index - 1) as usize]
-                                            .file_name()
-                                            .unwrap()
-                                            .to_str()
-                                            .unwrap()
-                                            .to_string(),
-                                    );
-                                } else {
-                                    previous_wallpaper_path = format!(
-                                        "{}{}",
-                                        wallpaper_dir_path,
-                                        paths[config.actual_wallpaper.sub_index as usize]
-                                            .file_name()
-                                            .unwrap()
-                                            .to_str()
-                                            .unwrap()
-                                            .to_string(),
-                                    );
-                                }
-                                return set_wallpaper(&previous_wallpaper_path);
-                            }
-                            Err(e) => {
-                                return DwOperationExecutionResult {
-                                    success: false,
-                                    exit_code: 14,
-                                    message: Some(e.to_string()),
-                                };
-                            }
-                        }
+                    Err(e) => {
+                        return DwOperationExecutionResult {
+                            success: false,
+                            exit_code: 16,
+                            message: Some(e.to_string()),
+                        };
                     }
                 }
-                return DwOperationExecutionResult {
-                    success: false,
-                    exit_code: 15,
-                    message: Some("Error getting parent candidate path from entry".into()),
-                };
+                
             }
 
             return DwOperationExecutionResult {
@@ -344,6 +322,7 @@ pub fn previous() -> DwOperationExecutionResult {
                 exit_code: 0,
                 message: None,
             };
+            
         }
         Err(e) => {
             return DwOperationExecutionResult {
