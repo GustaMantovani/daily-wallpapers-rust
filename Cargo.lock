@@ -184,6 +184,7 @@ version = "0.0.0"
 dependencies = [
  "chrono",
  "clap",
+ "libloading",
  "serde",
  "serde_json",
  "tree_magic",
@@ -278,6 +279,16 @@ name = "libc"
 version = "0.2.155"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97b3888a4aecf77e811145cadf6eef5901f4782c53886191b2f693f24761847c"
+
+[[package]]
+name = "libloading"
+version = "0.8.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e310b3a6b5907f99202fcdb4960ff45b93735d7c7d96b760fcff8db2dc0e103d"
+dependencies = [
+ "cfg-if 1.0.0",
+ "windows-targets",
+]
 
 [[package]]
 name = "lock_api"

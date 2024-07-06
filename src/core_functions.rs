@@ -22,20 +22,83 @@ use std::{
     io::Write,
     path::{Path, PathBuf},
     process::Command,
+    env::consts::OS,
 };
+use std::ffi::CString;
+use libloading::{Library, Symbol};
 
-pub fn change_wallpaper(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
+pub fn change_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
     if !path.exists() {
-        // gsettings not return errors for inexistent paths, so we need produce it
         return Err("Error: The specified file path does not exist.".into());
     }
 
-    if tree_magic::from_filepath(path).split("/").next() != Some("image") {
-        return Err("Err: file is not an image".into());
+    if tree_magic::from_filepath(path).split('/').next() != Some("image") {
+        return Err("Error: The file is not an image.".into());
     }
 
+    let os_type = OS;
+    let result = match os_type {
+        "linux" => set_linux_wallpaper(path),
+        "windows" => set_windows_wallpaper(path),
+        "macos" => set_macos_wallpaper(path),
+        _ => Err("Error: Unsupported operating system.".into()),
+    };
+
+    result
+}
+
+fn set_linux_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
+    let desktop_env = get_desktop_environment();
+
+    let command = match desktop_env.as_str() {
+        "gnome" => format!("gsettings set org.gnome.desktop.background picture-uri-dark {:?}", path),
+        "kde" => format!("qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript 'var Desktops = desktops(); for (i=0; i<Desktops.length; i++) {{d = Desktops[i];d.wallpaperPlugin = \"org.kde.image\";d.currentConfigGroup = Array(\"Wallpaper\", \"org.kde.image\", \"General\");d.writeConfig(\"Image\", \"file://{}\")}}'", path.to_string_lossy()),
+        "xfce" => format!("xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitor0/image-path --set {:?}", path),
+        _ => return Err("Error: Unsupported Linux desktop environment.".into()),
+    };
+
+    let command_execution_output =
+        Command::new("sh")
+            .args(["-c", &command])
+            .output()
+            .map_err(|e| {
+                format!(
+                    "Error: Failed to execute process to change wallpaper: {}",
+                    e
+                )
+            })?;
+
+    if !command_execution_output.status.success() {
+        return Err("Error: The command to change the wallpaper failed.".into());
+    }
+
+    Ok(())
+}
+
+type SetWallpaperFn = unsafe extern "C" fn(*const i8);
+
+fn set_windows_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
+    unsafe {
+        // Carrega a biblioteca DLL de forma insegura
+        let lib = Library::new("csharp/WindowsWallpaperChanger.dll")
+            .map_err(|e| format!("Failed to load DLL: {}", e))?;
+
+        // Obtém o símbolo da função SetWallpaper
+        let func: Symbol<SetWallpaperFn> = lib.get(b"SetWallpaper\0")
+            .map_err(|e| format!("Failed to load symbol: {}", e))?;
+
+        // Converte o caminho do Rust para uma CString
+        let c_path = CString::new(path.to_str().ok_or("Invalid path")?)?;
+
+        // Chama a função externa
+        func(c_path.as_ptr());
+    }
+    Ok(())
+}
+
+fn set_macos_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
     let command = format!(
-        "gsettings set org.gnome.desktop.background picture-uri-dark {:?}",
+        "osascript -e 'tell application \"System Events\" to set picture of every desktop to {:?}'",
         path
     );
 
@@ -55,6 +118,16 @@ pub fn change_wallpaper(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
     }
 
     Ok(())
+}
+
+fn get_desktop_environment() -> String {
+    if let Ok(desktop) = std::env::var("XDG_CURRENT_DESKTOP") {
+        desktop.to_lowercase()
+    } else if let Ok(desktop) = std::env::var("DESKTOP_SESSION") {
+        desktop.to_lowercase()
+    } else {
+        String::new()
+    }
 }
 
 pub fn read_config_json(path: &str) -> Result<DwConfig, Box<dyn Error>> {
