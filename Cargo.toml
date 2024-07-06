@@ -2,7 +2,6 @@
 name = "daily-wallpapers-rust"
 version = "0.0.0"
 edition = "2021"
-author = "Gustavo Mantovani"
 description = "A simple and universal implementation to automate changing wallpapers on UNIX systems"
 repository = "https://github.com/GustaMantovani/daily-wallpapers-rust"
 
