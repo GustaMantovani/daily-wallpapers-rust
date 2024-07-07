@@ -24,8 +24,6 @@ use std::{
     process::Command,
     env::consts::OS,
 };
-use std::ffi::CString;
-use libloading::{Library, Symbol};
 
 pub fn change_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
     if !path.exists() {
@@ -75,24 +73,29 @@ fn set_linux_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-type SetWallpaperFn = unsafe extern "C" fn(*const i8);
-
 fn set_windows_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
-    unsafe {
-        // Carrega a biblioteca DLL de forma insegura
-        let lib = Library::new("csharp/WindowsWallpaperChanger.dll")
-            .map_err(|e| format!("Failed to load DLL: {}", e))?;
+    // Converte o caminho para uma string
+    let wallpaper_path = path.to_str().ok_or("Invalid path")?;
+    // Executa o comando
+    let command_execution_output = Command::new("external_builds\\windows\\WallpaperChanger.exe")
+        // .args(["/C", &format!(
+        //     "external_builds\\windows\\WallpaperChanger.exe {}",
+        //     wallpaper_path
+        // )])
+        .args(Some(wallpaper_path))
+        .output()
+        .map_err(|e| {
+            format!(
+                "Error: Failed to execute process to change wallpaper: {}",
+                e
+            )
+        })?;
 
-        // Obtém o símbolo da função SetWallpaper
-        let func: Symbol<SetWallpaperFn> = lib.get(b"SetWallpaper\0")
-            .map_err(|e| format!("Failed to load symbol: {}", e))?;
-
-        // Converte o caminho do Rust para uma CString
-        let c_path = CString::new(path.to_str().ok_or("Invalid path")?)?;
-
-        // Chama a função externa
-        func(c_path.as_ptr());
+    // Verifica se o comando foi bem-sucedido
+    if !command_execution_output.status.success() {
+        return Err("Error: The command to change the wallpaper failed.".into());
     }
+
     Ok(())
 }
 

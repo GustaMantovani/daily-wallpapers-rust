@@ -1,3 +1,5 @@
-/target
 .vscode
+/target
+Cargo.lock
 config
+external_builds
