@@ -344,56 +344,56 @@ pub fn previous() -> DwOperationExecutionResult {
                     previous_wallpaper_path = found_wpp_path_by_index_in_directory(actual_wallpaper_dir_path, previous_wallpaper_sub_index).unwrap().to_string(); //Obtendo o path da imagem anterior
                 }
                 
-                config.actual_wallpaper.path = previous_wallpaper_path.clone();
-                config.actual_wallpaper.date_set = Local::now();
-                config.actual_wallpaper.index = previous_wallpaper_index;
-                config.actual_wallpaper.child = previous_wallpaper_child;
-                config.actual_wallpaper.sub_index = previous_wallpaper_sub_index;
+                // config.actual_wallpaper.path = previous_wallpaper_path.clone();
+                // config.actual_wallpaper.date_set = Local::now();
+                // config.actual_wallpaper.index = previous_wallpaper_index;
+                // config.actual_wallpaper.child = previous_wallpaper_child;
+                // config.actual_wallpaper.sub_index = previous_wallpaper_sub_index;
 
-                match write_config_json(config, "./config/config.json".into()) {
-                    Ok(_) => {
-                        return set_wallpaper(&previous_wallpaper_path);
-                    }
+                // match write_config_json(config, "./config/config.json".into()) {
+                //     Ok(_) => {
+                //         return set_wallpaper(&previous_wallpaper_path);
+                //     }
 
-                    Err(e) => {
-                        return DwOperationExecutionResult {
-                            success: false,
-                            exit_code: 16,
-                            message: Some(e.to_string()),
-                        };
-                    }
-                }
-            }
-
-            if actual_wallpaper_index == 0{
-                previous_wallpaper_index = config.candidates.len() - 1;
+                //     Err(e) => {
+                //         return DwOperationExecutionResult {
+                //             success: false,
+                //             exit_code: 16,
+                //             message: Some(e.to_string()),
+                //         };
+                //     }
+                // }
             }else{
-                previous_wallpaper_index = actual_wallpaper_index - 1;
-            }
-
-            if Path::new(&config.candidates[previous_wallpaper_index]).is_dir(){
-                previous_wallpaper_child = true;
-
-                match list_images_in_directory(Path::new(
-                    &config.candidates[previous_wallpaper_index],
-                )) {
-                    Ok(image_paths) => {
-                        previous_wallpaper_path = image_paths.last().unwrap().clone();
-                        previous_wallpaper_sub_index = image_paths.len() - 1;
-                    }
-                    Err(e) => {
-                        return DwOperationExecutionResult {
-                            success: false,
-                            exit_code: 16,
-                            message: Some(e.to_string()),
-                        };
-                    }
+                if actual_wallpaper_index == 0{
+                    previous_wallpaper_index = config.candidates.len() - 1;
+                }else{
+                    previous_wallpaper_index = actual_wallpaper_index - 1;
                 }
-
-            }else{
-                previous_wallpaper_child = false;
-                previous_wallpaper_sub_index = 0;
-                previous_wallpaper_path = config.candidates[previous_wallpaper_index].clone();
+    
+                if Path::new(&config.candidates[previous_wallpaper_index]).is_dir(){
+                    previous_wallpaper_child = true;
+    
+                    match list_images_in_directory(Path::new(
+                        &config.candidates[previous_wallpaper_index],
+                    )) {
+                        Ok(image_paths) => {
+                            previous_wallpaper_path = image_paths.last().unwrap().clone();
+                            previous_wallpaper_sub_index = image_paths.len() - 1;
+                        }
+                        Err(e) => {
+                            return DwOperationExecutionResult {
+                                success: false,
+                                exit_code: 16,
+                                message: Some(e.to_string()),
+                            };
+                        }
+                    }
+    
+                }else{
+                    previous_wallpaper_child = false;
+                    previous_wallpaper_sub_index = 0;
+                    previous_wallpaper_path = config.candidates[previous_wallpaper_index].clone();
+                }
             }
 
             config.actual_wallpaper.path = previous_wallpaper_path.clone();
