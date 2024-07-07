@@ -273,3 +273,21 @@ pub fn found_wpp_index_by_path_in_directory(dir_path: &Path, target_file_name: &
         None => Err(format!("File {} not found in directory {}", target_file_name, dir_path.display()).into())
     }
 }
+
+pub fn list_images_in_directory(directory: &Path) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+    let mut image_paths = Vec::new();
+
+    for entry in fs::read_dir(directory)? {
+        let entry = entry?;
+        let path = entry.path();
+
+        if path.is_file() {
+            let mime = tree_magic::from_filepath(&path);
+            if mime.starts_with("image/") {
+                image_paths.push(path.to_str().unwrap().to_string());
+            }
+        }
+    }
+
+    Ok(image_paths)
+}
