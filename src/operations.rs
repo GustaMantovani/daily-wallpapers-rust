@@ -301,12 +301,10 @@ pub fn previous() -> DwOperationExecutionResult {
             let previous_wallpaper_child: bool;
             let previous_wallpaper_sub_index: usize;
 
-
-
             if actual_wallpaper_child {
                 //Conseguindo o subindex...
                 if actual_wallpaper_sub_index == 0 {
-                    
+
                     if actual_wallpaper_index == 0{
                         previous_wallpaper_index = config.candidates.len() - 1;
                     }else {
@@ -334,7 +332,6 @@ pub fn previous() -> DwOperationExecutionResult {
                                 };
                             }
                         }
-                        println!("{}", previous_wallpaper_path);
                     } else {
                         previous_wallpaper_child = false; //Aqui já sabemos que o anterior não é um diretório, pois esse else é um desvio condicional justamente disso
                         previous_wallpaper_path = config.candidates[previous_wallpaper_index].clone();
@@ -368,11 +365,56 @@ pub fn previous() -> DwOperationExecutionResult {
                 }
             }
 
-            return DwOperationExecutionResult {
-                success: true,
-                exit_code: 0,
-                message: None,
-            };
+            if actual_wallpaper_index == 0{
+                previous_wallpaper_index = config.candidates.len() - 1;
+            }else{
+                previous_wallpaper_index = actual_wallpaper_index - 1;
+            }
+
+            if Path::new(&config.candidates[previous_wallpaper_index]).is_dir(){
+                previous_wallpaper_child = true;
+
+                match list_images_in_directory(Path::new(
+                    &config.candidates[previous_wallpaper_index],
+                )) {
+                    Ok(image_paths) => {
+                        previous_wallpaper_path = image_paths.last().unwrap().clone();
+                        previous_wallpaper_sub_index = image_paths.len() - 1;
+                    }
+                    Err(e) => {
+                        return DwOperationExecutionResult {
+                            success: false,
+                            exit_code: 16,
+                            message: Some(e.to_string()),
+                        };
+                    }
+                }
+
+            }else{
+                previous_wallpaper_child = false;
+                previous_wallpaper_sub_index = 0;
+                previous_wallpaper_path = config.candidates[previous_wallpaper_index].clone();
+            }
+
+            config.actual_wallpaper.path = previous_wallpaper_path.clone();
+            config.actual_wallpaper.date_set = Local::now();
+            config.actual_wallpaper.index = previous_wallpaper_index;
+            config.actual_wallpaper.child = previous_wallpaper_child;
+            config.actual_wallpaper.sub_index = previous_wallpaper_sub_index;
+
+            match write_config_json(config, "./config/config.json".into()) {
+                Ok(_) => {
+                    return set_wallpaper(&previous_wallpaper_path);
+                }
+
+                Err(e) => {
+                    return DwOperationExecutionResult {
+                        success: false,
+                        exit_code: 16,
+                        message: Some(e.to_string()),
+                    };
+                }
+            }
         }
         Err(e) => {
             return DwOperationExecutionResult {
