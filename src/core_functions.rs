@@ -36,8 +36,11 @@ pub fn change_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
 
     let os_type = OS;
     let result = match os_type {
+        #[cfg(target_os = "linux")]
         "linux" => set_linux_wallpaper(path),
+        #[cfg(target_os = "windows")]
         "windows" => set_windows_wallpaper(path),
+        #[cfg(target_os = "macos")]
         "macos" => set_macos_wallpaper(path),
         _ => Err("Error: Unsupported operating system.".into()),
     };
@@ -45,6 +48,7 @@ pub fn change_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
     result
 }
 
+#[cfg(target_os = "linux")]
 fn set_linux_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
     let desktop_env = get_desktop_environment();
 
@@ -73,16 +77,13 @@ fn set_linux_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+#[cfg(target_os = "windows")]
 fn set_windows_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
-    // Converte o caminho para uma string
-    let wallpaper_path = path.to_str().ok_or("Invalid path")?;
-    // Executa o comando
+
+    let path_as_str = path.to_str().ok_or("Invalid path")?;
+
     let command_execution_output = Command::new("external_builds\\windows\\WallpaperChanger.exe")
-        // .args(["/C", &format!(
-        //     "external_builds\\windows\\WallpaperChanger.exe {}",
-        //     wallpaper_path
-        // )])
-        .args(Some(wallpaper_path))
+        .args(Some(path_as_str))
         .output()
         .map_err(|e| {
             format!(
@@ -91,7 +92,6 @@ fn set_windows_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
             )
         })?;
 
-    // Verifica se o comando foi bem-sucedido
     if !command_execution_output.status.success() {
         return Err("Error: The command to change the wallpaper failed.".into());
     }
@@ -99,6 +99,7 @@ fn set_windows_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+#[cfg(target_os = "macos")]
 fn set_macos_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
     let command = format!(
         "osascript -e 'tell application \"System Events\" to set picture of every desktop to {:?}'",
@@ -123,6 +124,7 @@ fn set_macos_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+#[cfg(target_os = "linux")]
 fn get_desktop_environment() -> String {
     if let Ok(desktop) = std::env::var("XDG_CURRENT_DESKTOP") {
         desktop.to_lowercase()
