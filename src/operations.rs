@@ -351,7 +351,7 @@ pub fn previous() -> DwOperationExecutionResult {
                 Err(_) => {
                     previous_wallpaper_sub_index = 0;
                     found_wpp_path_by_index_in_directory(actual_wallpaper_dir_path, previous_wallpaper_sub_index).unwrap().to_string()
-                },
+                }
                 Ok(path) => path
             }
         }   
@@ -397,6 +397,174 @@ pub fn previous() -> DwOperationExecutionResult {
     match write_config_json(config, "./config/config.json".into()) {
         Ok(_) => {
             return set_wallpaper(&previous_wallpaper_path);
+        }
+
+        Err(e) => {
+            return DwOperationExecutionResult {
+                success: false,
+                exit_code: 16,
+                message: Some(e.to_string()),
+            };
+        }
+    }
+}
+
+pub fn next()-> DwOperationExecutionResult{
+    let mut config = match read_config_json("config/config.json") {
+        Ok(config) => config,
+        Err(e) => {
+            return DwOperationExecutionResult {
+                success: false,
+                exit_code: 16,
+                message: Some(e.to_string()),
+            };
+        }
+    };
+
+    //Config atual
+    let actual_wallpaper_path: &Path = Path::new(&config.actual_wallpaper.path);
+    let actual_wallpaper_index: usize = config.actual_wallpaper.index;
+    let actual_wallpaper_child: bool = config.actual_wallpaper.child;
+
+    //Tentando obter informações
+    let (actual_wallpaper_dir_path, actual_wallpaper_file_name) =
+        match actual_wallpaper_path.parent() {
+            Some(dir_path) => match actual_wallpaper_path.file_name() {
+                Some(file_name) => (dir_path, file_name),
+                None => {
+                    return DwOperationExecutionResult {
+                        success: false,
+                        exit_code: 15,
+                        message: Some("Error getting file name from path".into()),
+                    };
+                }
+            },
+            None => {
+                return DwOperationExecutionResult {
+                    success: false,
+                    exit_code: 15,
+                    message: Some("Error getting parent directory from path".into()),
+                };
+            }
+        };
+
+    //Config pós operação
+    let next_wallpaper_path: String;
+    let next_wallpaper_index: usize;
+    let next_wallpaper_child: bool;
+    let next_wallpaper_sub_index: usize;
+
+    if actual_wallpaper_child {
+
+        //Tentando obter o subindex
+        let mut actual_wallpaper_sub_index = match found_wpp_index_by_path_in_directory(
+            actual_wallpaper_dir_path,
+            actual_wallpaper_file_name.to_str().unwrap(),
+        ) {
+            Ok(index) => index,
+            Err(_) => config.actual_wallpaper.sub_index
+        };
+
+        let num_of_candidates_in_dir = match list_images_in_directory(&Path::new(&config.candidates[actual_wallpaper_index])) {
+            Ok(image_paths) => {
+                image_paths.len()
+            },
+            Err(e) => {
+                return DwOperationExecutionResult {
+                    success: false,
+                    exit_code: 16,
+                    message: Some(e.to_string()),
+                };
+            }
+        };
+
+        //Considero essa condição como referência perdida, então acho melhor resetar o ciclo no diretório atual
+        if actual_wallpaper_sub_index > num_of_candidates_in_dir{
+            actual_wallpaper_sub_index = 0;
+        }
+
+        //Conseguindo o subindex...
+        if actual_wallpaper_sub_index == num_of_candidates_in_dir - 1 {
+
+            if actual_wallpaper_index == config.candidates.len() - 1{
+                next_wallpaper_index = 0;
+            }else {
+                next_wallpaper_index = actual_wallpaper_index + 1; //Sabendo que vamos sair do conjunto atual de candidatos, temos que subtrair o index primário
+            }
+            
+
+
+            next_wallpaper_sub_index = 0;
+
+            if Path::new(&config.candidates[next_wallpaper_index]).is_dir() {
+                next_wallpaper_path = match found_wpp_path_by_index_in_directory(Path::new(&config.candidates[next_wallpaper_index]), 0){
+                    Ok(path) => path,
+                    Err(e) => {
+                        return DwOperationExecutionResult {
+                            success: false,
+                            exit_code: 16,
+                            message: Some(e.to_string()),
+                        }
+                    }
+                };
+                next_wallpaper_child = true; //Já temos certeza que o wallpaper anterior será um child
+
+            } else {
+                next_wallpaper_path = config.candidates[next_wallpaper_index].clone();
+                next_wallpaper_child = false; //Aqui já sabemos que o posterior não é um diretório, pois esse else é um desvio condicional justamente disso
+            }
+
+        } else {
+            next_wallpaper_child = true; //Se não estamos saindo de um conjunto de imagens, o Wallpaper a ser setado ainda é um child
+            next_wallpaper_index = actual_wallpaper_index; //Se não estamos saindo de um conjunto, o index não muda
+            next_wallpaper_sub_index = actual_wallpaper_sub_index + 1; //Se o subindex do atual não for zero, significa que o subindex de quem será setado é o atual mais 1 (porque queremos o posterior)
+            next_wallpaper_path = match found_wpp_path_by_index_in_directory(Path::new(&config.candidates[next_wallpaper_index]), next_wallpaper_sub_index){
+                Ok(path) => path,
+                Err(e) => {
+                    return DwOperationExecutionResult {
+                        success: false,
+                        exit_code: 16,
+                        message: Some(e.to_string()),
+                    }
+                }
+            };
+        }   
+    }else{
+        if actual_wallpaper_index == config.candidates.len() - 1{
+            next_wallpaper_index = 0;
+        }else{
+            next_wallpaper_index = actual_wallpaper_index + 1;
+        }
+
+        next_wallpaper_path = match found_wpp_path_by_index_in_directory(Path::new(&config.candidates[next_wallpaper_index]), 0){
+            Ok(path) => path,
+            Err(e) => {
+                return DwOperationExecutionResult {
+                    success: false,
+                    exit_code: 16,
+                    message: Some(e.to_string()),
+                }
+            }
+        };
+
+        next_wallpaper_sub_index = 0;
+
+        if Path::new(&config.candidates[next_wallpaper_index]).is_dir(){
+            next_wallpaper_child = true;
+        }else{
+            next_wallpaper_child = false;
+        }
+    }
+
+    config.actual_wallpaper.path = next_wallpaper_path.clone();
+    config.actual_wallpaper.date_set = Local::now();
+    config.actual_wallpaper.index = next_wallpaper_index;
+    config.actual_wallpaper.child = next_wallpaper_child;
+    config.actual_wallpaper.sub_index = next_wallpaper_sub_index;
+
+    match write_config_json(config, "./config/config.json".into()) {
+        Ok(_) => {
+            return set_wallpaper(&next_wallpaper_path);
         }
 
         Err(e) => {
