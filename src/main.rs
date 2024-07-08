@@ -23,7 +23,7 @@ use crate::clap_models::{Cli, Commands};
 use crate::core_models::DwOperationExecutionResult;
 use crate::operations::{
     add_wallpaper, perform_init, previous, rm_wallpaper, set_config, set_preset, set_wallpaper,
-    show_config, next,
+    show_config, next, reset,
 };
 use clap::Parser;
 use std::process::ExitCode;
@@ -54,11 +54,7 @@ fn main() -> ExitCode {
         }
 
         Commands::Reset => {
-            operation_res = DwOperationExecutionResult {
-                success: true,
-                exit_code: 0,
-                message: None,
-            }
+            operation_res = reset();
         }
 
         Commands::SetWallpaper { path } => {

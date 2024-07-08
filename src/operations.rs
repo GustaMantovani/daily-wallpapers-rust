@@ -492,8 +492,6 @@ pub fn next()-> DwOperationExecutionResult{
                 next_wallpaper_index = actual_wallpaper_index + 1; //Sabendo que vamos sair do conjunto atual de candidatos, temos que subtrair o index primário
             }
             
-
-
             next_wallpaper_sub_index = 0;
 
             if Path::new(&config.candidates[next_wallpaper_index]).is_dir() {
@@ -574,5 +572,66 @@ pub fn next()-> DwOperationExecutionResult{
                 message: Some(e.to_string()),
             };
         }
+    }
+}
+
+pub fn reset() -> DwOperationExecutionResult {
+    let mut config = match read_config_json("config/config.json") {
+        Ok(config) => config,
+        Err(e) => {
+            return DwOperationExecutionResult {
+                success: false,
+                exit_code: 16,
+                message: Some(e.to_string()),
+            };
+        }
+    };
+
+    let reset_wallpaper_path: String;
+    let reset_wallpaper_child: bool;
+    let reset_wallpaper_sub_index: usize;
+
+    if Path::new(&config.candidates[0]).is_dir() {
+        reset_wallpaper_child = true;
+        reset_wallpaper_sub_index = 0;
+        reset_wallpaper_path = match list_images_in_directory(Path::new(&config.candidates[0])) {
+            Ok(image_paths) => {
+                if !image_paths.is_empty() {
+                    image_paths[0].clone()
+                } else {
+                    return DwOperationExecutionResult {
+                        success: false,
+                        exit_code: 17,
+                        message: Some("The directory is empty".to_string()),
+                    };
+                }
+            }
+            Err(e) => {
+                return DwOperationExecutionResult {
+                    success: false,
+                    exit_code: 18,
+                    message: Some(e.to_string()),
+                };
+            }
+        };
+    } else {
+        reset_wallpaper_child = false;
+        reset_wallpaper_sub_index = 0;
+        reset_wallpaper_path = config.candidates[0].clone();
+    }
+
+    config.actual_wallpaper.path = reset_wallpaper_path.clone();
+    config.actual_wallpaper.date_set = Local::now();
+    config.actual_wallpaper.index = 0;
+    config.actual_wallpaper.child = reset_wallpaper_child;
+    config.actual_wallpaper.sub_index = reset_wallpaper_sub_index;
+
+    match write_config_json(config, "./config/config.json".into()) {
+        Ok(_) => set_wallpaper(&reset_wallpaper_path),
+        Err(e) => DwOperationExecutionResult {
+            success: false,
+            exit_code: 19,
+            message: Some(e.to_string()),
+        },
     }
 }
