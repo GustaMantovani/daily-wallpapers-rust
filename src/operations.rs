@@ -15,16 +15,14 @@
 // src/operations.rs
 
 use chrono::Local;
-
 use crate::core_functions::{
     change_config_file, change_wallpaper, found_wpp_index_by_path_in_directory,
     found_wpp_path_by_index_in_directory, init, list_images_in_directory, read_config_json,
-    write_config_json,
+    write_config_json
 };
 use crate::core_models::{DwOperationExecutionResult, DwPreset};
-
 use std::{
-    path::{Path},
+    path::Path,
     usize,
 };
 

@@ -21,8 +21,7 @@ use std::{
     fs::{self, File},
     io::Write,
     path::{Path, PathBuf},
-    process::Command,
-    env::consts::OS,
+    process::Command
 };
 
 pub fn change_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
@@ -34,18 +33,20 @@ pub fn change_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
         return Err("Error: The file is not an image.".into());
     }
 
-    let os_type = OS;
-    let result = match os_type {
-        #[cfg(target_os = "linux")]
-        "linux" => set_linux_wallpaper(path),
-        #[cfg(target_os = "windows")]
-        "windows" => set_windows_wallpaper(path),
-        #[cfg(target_os = "macos")]
-        "macos" => set_macos_wallpaper(path),
-        _ => Err("Error: Unsupported operating system.".into()),
-    };
+    #[cfg(target_os = "linux")]
+    {
+        set_linux_wallpaper(path)
+    }
 
-    result
+    #[cfg(target_os = "windows")]
+    {
+        set_windows_wallpaper(path)
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        set_macos_wallpaper(path)
+    }
 }
 
 #[cfg(target_os = "linux")]
@@ -59,16 +60,15 @@ fn set_linux_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
         _ => return Err("Error: Unsupported Linux desktop environment.".into()),
     };
 
-    let command_execution_output =
-        Command::new("sh")
-            .args(["-c", &command])
-            .output()
-            .map_err(|e| {
-                format!(
-                    "Error: Failed to execute process to change wallpaper: {}",
-                    e
-                )
-            })?;
+    let command_execution_output = Command::new("sh")
+        .args(["-c", &command])
+        .output()
+        .map_err(|e| {
+            format!(
+                "Error: Failed to execute process to change wallpaper: {}",
+                e
+            )
+        })?;
 
     if !command_execution_output.status.success() {
         return Err("Error: The command to change the wallpaper failed.".into());
@@ -77,9 +77,20 @@ fn set_linux_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+#[cfg(target_os = "linux")]
+fn get_desktop_environment() -> String {
+    if let Ok(desktop) = std::env::var("XDG_CURRENT_DESKTOP") {
+        desktop.to_lowercase()
+    } else if let Ok(desktop) = std::env::var("DESKTOP_SESSION") {
+        desktop.to_lowercase()
+    } else {
+        String::new()
+    }
+}
+
+
 #[cfg(target_os = "windows")]
 fn set_windows_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
-
     let path_as_str = path.to_str().ok_or("Invalid path")?;
 
     let command_execution_output = Command::new("external_builds\\windows\\WallpaperChanger.exe")
@@ -106,33 +117,21 @@ fn set_macos_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
         path
     );
 
-    let command_execution_output =
-        Command::new("sh")
-            .args(["-c", &command])
-            .output()
-            .map_err(|e| {
-                format!(
-                    "Error: Failed to execute process to change wallpaper: {}",
-                    e
-                )
-            })?;
+    let command_execution_output = Command::new("sh")
+        .args(["-c", &command])
+        .output()
+        .map_err(|e| {
+            format!(
+                "Error: Failed to execute process to change wallpaper: {}",
+                e
+            )
+        })?;
 
     if !command_execution_output.status.success() {
         return Err("Error: The command to change the wallpaper failed.".into());
     }
 
     Ok(())
-}
-
-#[cfg(target_os = "linux")]
-fn get_desktop_environment() -> String {
-    if let Ok(desktop) = std::env::var("XDG_CURRENT_DESKTOP") {
-        desktop.to_lowercase()
-    } else if let Ok(desktop) = std::env::var("DESKTOP_SESSION") {
-        desktop.to_lowercase()
-    } else {
-        String::new()
-    }
 }
 
 pub fn read_config_json(path: &str) -> Result<DwConfig, Box<dyn Error>> {
@@ -183,7 +182,7 @@ pub fn init() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-pub fn change_config_file(new_config_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
+pub fn change_config_file(new_config_path: &Path) -> Result<(), Box<dyn Error>> {
     read_config_json(new_config_path.to_str().unwrap()).map_err(|e| {
         format!(
             "Error: Failed to read new config file at {}: {}",
@@ -194,32 +193,77 @@ pub fn change_config_file(new_config_path: &Path) -> Result<(), Box<dyn std::err
 
     const CONFIG_DIR_PATH: &str = "./config";
 
-    Command::new("sh")
-        .args(["-c", &format!("mkdir -p {}", CONFIG_DIR_PATH)])
-        .output()
-        .map_err(|e| {
-            format!(
-                "Error: Failed to create config directory {}: {}",
-                CONFIG_DIR_PATH, e
-            )
-        })?;
+    #[cfg(target_os = "linux")]
+    {
+        Command::new("sh")
+            .args(["-c", &format!("mkdir -p {}", CONFIG_DIR_PATH)])
+            .output()
+            .map_err(|e| {
+                format!(
+                    "Error: Failed to create config directory {}: {}",
+                    CONFIG_DIR_PATH, e
+                )
+            })?;
 
-    Command::new("sh")
-        .args([
-            "-c",
-            &format!("cp {:?} {}", new_config_path, CONFIG_DIR_PATH),
-        ])
-        .output()
-        .map_err(|e| {
-            format!(
-                "Error: Failed to copy new config file to {}: {}",
-                CONFIG_DIR_PATH, e
-            )
-        })?;
+        Command::new("sh")
+            .args(["-c", &format!("cp {:?} {}", new_config_path, CONFIG_DIR_PATH)])
+            .output()
+            .map_err(|e| {
+                format!(
+                    "Error: Failed to copy new config file to {}: {}",
+                    CONFIG_DIR_PATH, e
+                )
+            })?;
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        Command::new("cmd")
+            .args(["/C", &format!("mkdir {}", CONFIG_DIR_PATH)])
+            .output()
+            .map_err(|e| {
+                format!(
+                    "Error: Failed to create config directory {}: {}",
+                    CONFIG_DIR_PATH, e
+                )
+            })?;
+
+        Command::new("cmd")
+            .args(["/C", &format!("copy {} {}", new_config_path.display(), CONFIG_DIR_PATH)])
+            .output()
+            .map_err(|e| {
+                format!(
+                    "Error: Failed to copy new config file to {}: {}",
+                    CONFIG_DIR_PATH, e
+                )
+            })?;
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        Command::new("sh")
+            .args(["-c", &format!("mkdir -p {}", CONFIG_DIR_PATH)])
+            .output()
+            .map_err(|e| {
+                format!(
+                    "Error: Failed to create config directory {}: {}",
+                    CONFIG_DIR_PATH, e
+                )
+            })?;
+
+        Command::new("sh")
+            .args(["-c", &format!("cp {:?} {}", new_config_path, CONFIG_DIR_PATH)])
+            .output()
+            .map_err(|e| {
+                format!(
+                    "Error: Failed to copy new config file to {}: {}",
+                    CONFIG_DIR_PATH, e
+                )
+            })?;
+    }
 
     Ok(())
 }
-
 pub fn found_wpp_path_by_index_in_directory(dir_path: &Path, index: usize) -> Result<String, Box<dyn Error>> {
     // Check if the directory exists
     if !dir_path.is_dir() {
