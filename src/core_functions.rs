@@ -155,14 +155,42 @@ pub fn write_config_json(config: DwConfig, path: String) -> Result<(), Box<dyn E
 pub fn init() -> Result<(), Box<dyn std::error::Error>> {
     const PATH: &str = "./config/config.json";
 
-    Command::new("sh")
-        .args(["-c", "mkdir -p config"])
-        .output()
-        .map_err(|e| format!("Error: Failed to create config directory: {}", e))?;
-    Command::new("sh")
-        .args(["-c", "touch config/config.json"])
-        .output()
-        .map_err(|e| format!("Error: Failed to create config.json file: {}", e))?;
+    #[cfg(target_os = "linux")]
+    {
+        Command::new("sh")
+            .args(["-c", "mkdir -p config"])
+            .output()
+            .map_err(|e| format!("Error: Failed to create config directory: {}", e))?;
+        Command::new("sh")
+            .args(["-c", "touch config/config.json"])
+            .output()
+            .map_err(|e| format!("Error: Failed to create config.json file: {}", e))?;
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        Command::new("cmd")
+            .args(["/C", "mkdir config"])
+            .output()
+            .map_err(|e| format!("Error: Failed to create config directory: {}", e))?;
+        Command::new("cmd")
+            .args(["/C", "type nul > config\\config.json"])
+            .output()
+            .map_err(|e| format!("Error: Failed to create config.json file: {}", e))?;
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        Command::new("sh")
+            .args(["-c", "mkdir -p config"])
+            .output()
+            .map_err(|e| format!("Error: Failed to create config directory: {}", e))?;
+        Command::new("sh")
+            .args(["-c", "touch config/config.json"])
+            .output()
+            .map_err(|e| format!("Error: Failed to create config.json file: {}", e))?;
+    }
+
     let empty_config = DwConfig {
         actual_wallpaper: DwWallpaperCandidate {
             index: 0,
@@ -264,6 +292,7 @@ pub fn change_config_file(new_config_path: &Path) -> Result<(), Box<dyn Error>> 
 
     Ok(())
 }
+
 pub fn found_wpp_path_by_index_in_directory(dir_path: &Path, index: usize) -> Result<String, Box<dyn Error>> {
     // Check if the directory exists
     if !dir_path.is_dir() {
