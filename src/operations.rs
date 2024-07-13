@@ -674,7 +674,7 @@ pub fn on() -> DwOperationExecutionResult{
     let action: &str = &action;
 
     let scheduler_string = generate_schedule(config.time_config.preset, config.time_config.interval, "DWR", action);
-    
+    println!("{}", scheduler_string);
     if cfg!(target_os = "linux") {  
 
         fn add_cron_entry(entry: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -760,6 +760,90 @@ pub fn on() -> DwOperationExecutionResult{
         return DwOperationExecutionResult {
             success: false,
             exit_code: 16,
+            message: Some("Unsupported OS".to_string()),
+        };
+    }
+}
+
+pub fn off() -> DwOperationExecutionResult {
+    if cfg!(target_os = "linux") {
+
+        let config = match read_config_json("config/config.json") {
+            Ok(config) => config,
+            Err(e) => {
+                return DwOperationExecutionResult {
+                    success: false,
+                    exit_code: 16,
+                    message: Some(e.to_string()),
+                };
+            }
+        };
+
+        fn remove_cron_entry(entry: &str) -> Result<(), Box<dyn std::error::Error>> {
+            let status = Command::new("sh")
+                .arg("scripts/linux/cron_remover.sh")
+                .arg(entry)
+                .status()?;
+            
+            if status.success() {
+                Ok(())
+            } else {
+                Err("Failed to add cron entry".into())
+            }
+        }
+        
+        let scheduler_string = generate_schedule(config.time_config.preset, config.time_config.interval, "DWR", "~/.dw/bin/dw next");
+
+        match remove_cron_entry(scheduler_string.as_str()) {
+            Ok(()) => {
+                DwOperationExecutionResult {
+                    success: true,
+                    exit_code: 0,
+                    message: Some("Entrada do cron removida com sucesso".to_string()),
+                }
+            }
+            Err(e) => {
+                DwOperationExecutionResult {
+                    success: false,
+                    exit_code: 1,
+                    message: Some(format!("Erro ao remover a entrada do cron: {}", e)),
+                }
+            }
+        }
+
+    } else if cfg!(target_os = "windows") {
+        let output = Command::new("cmd")
+            .args(&["/C", "schtasks /delete /tn DWR /f"])
+            .output();
+
+        match output {
+            Ok(output) => {
+                if output.status.success() {
+                    return DwOperationExecutionResult {
+                        success: true,
+                        exit_code: 0,
+                        message: Some("Command executed successfully".to_string()),
+                    };
+                } else {
+                    return DwOperationExecutionResult {
+                        success: false,
+                        exit_code: output.status.code().unwrap_or(1),
+                        message: Some(String::from_utf8_lossy(&output.stderr).to_string()),
+                    };
+                }
+            },
+            Err(e) => {
+                return DwOperationExecutionResult {
+                    success: false,
+                    exit_code: 1,
+                    message: Some(e.to_string()),
+                };
+            }
+        }
+    }else{
+        return DwOperationExecutionResult {
+            success: true,
+            exit_code: 0,
             message: Some("Unsupported OS".to_string()),
         };
     }

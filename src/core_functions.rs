@@ -367,7 +367,7 @@ pub fn list_images_in_directory(directory: &Path) -> Result<Vec<String>, Box<dyn
 pub fn generate_schedule(preset: DwPreset, interval: u8, task_name: &str, action: &str) -> String {
     #[cfg(target_os = "linux")]
     {
-        generate_cron_string(preset, interval)
+        generate_cron_string(preset, interval, action)
     }
 
     #[cfg(target_os = "windows")]
@@ -377,12 +377,13 @@ pub fn generate_schedule(preset: DwPreset, interval: u8, task_name: &str, action
 }
 
 
+
 #[cfg(target_os = "linux")]
-fn generate_cron_string(preset: DwPreset, interval: u8) -> String {
+fn generate_cron_string(preset: DwPreset, interval: u8, action: &str) -> String {
     match preset {
-        DwPreset::HOUR => format!("0 */{} * * *", interval),
-        DwPreset::MINUTE => format!("*/{} * * * *", interval),
-        DwPreset::DAY => format!("0 0 */{} * *", interval),
+        DwPreset::HOUR => format!("0 */{} * * * {}", interval, action),
+        DwPreset::MINUTE => format!("*/{} * * * * {}", interval, action),
+        DwPreset::DAY => format!("0 0 */{} * * {}", interval, action),
     }
 }
 
