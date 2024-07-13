@@ -18,12 +18,14 @@ use chrono::Local;
 use crate::core_functions::{
     change_config_file, change_wallpaper, found_wpp_index_by_path_in_directory,
     found_wpp_path_by_index_in_directory, init, list_images_in_directory, read_config_json,
-    write_config_json
+    write_config_json, generate_schedule
 };
 use crate::core_models::{DwOperationExecutionResult, DwPreset};
 use std::{
     path::Path,
     usize,
+    env,
+    process::Command
 };
 
 pub fn set_wallpaper(path: &String) -> DwOperationExecutionResult {
@@ -630,5 +632,135 @@ pub fn reset() -> DwOperationExecutionResult {
             exit_code: 19,
             message: Some(e.to_string()),
         },
+    }
+}
+
+pub fn on() -> DwOperationExecutionResult{
+    let mut config = match read_config_json("config/config.json") {
+        Ok(config) => config,
+        Err(e) => {
+            return DwOperationExecutionResult {
+                success: false,
+                exit_code: 16,
+                message: Some(e.to_string()),
+            };
+        }
+    };
+
+    let action: String;
+    if cfg!(target_os = "linux") {
+        action = "~/.dw/bin/dw next".to_string();
+    } else if cfg!(target_os = "windows") {
+        // Dynamically constructing the path using USERPROFILE environment variable
+        action = match env::var("USERPROFILE") {
+            Ok(user_profile) => format!(r"{}\AppData\Local\dw\bin\dw next", user_profile),
+            Err(e) => {
+                return DwOperationExecutionResult {
+                    success: false,
+                    exit_code: 16,
+                    message: Some(e.to_string()),
+                };
+            },
+        };
+    } else {
+        return DwOperationExecutionResult {
+            success: false,
+            exit_code: 16,
+            message: Some("Unsupported OS".to_string()),
+        };
+    }
+    
+    // Converting `action` to `&str`
+    let action: &str = &action;
+
+    let scheduler_string = generate_schedule(config.time_config.preset, config.time_config.interval, "DWR", action);
+    
+    if cfg!(target_os = "linux") {  
+
+        fn add_cron_entry(entry: &str) -> Result<(), Box<dyn std::error::Error>> {
+            let status = Command::new("sh")
+                .arg("scripts/linux/cron_adder.sh")
+                .arg(entry)
+                .status()?;
+            
+            if status.success() {
+                Ok(())
+            } else {
+                Err("Failed to add cron entry".into())
+            }
+        }
+        
+        match config.time_config.preset {
+            DwPreset::DAY => {
+                return DwOperationExecutionResult {
+                    success: false,
+                    exit_code: 16,
+                    message: Some("Unsupported OS".to_string()),
+                };
+            }
+
+            DwPreset::HOUR | DwPreset::MINUTE => {
+                match add_cron_entry(scheduler_string.as_str()) {
+                    Ok(()) => {
+                        return DwOperationExecutionResult {
+                            success: true,
+                            exit_code: 0,
+                            message: Some("Cron entry added successfully".to_string()),
+                        };
+                    }
+                    Err(e) => {
+                        return DwOperationExecutionResult {
+                            success: false,
+                            exit_code: 16,
+                            message: Some(e.to_string()),
+                        };
+                    }
+                }
+            }
+
+            _ => {
+                return DwOperationExecutionResult {
+                    success: false,
+                    exit_code: 16,
+                    message: Some("Unsupported OS".to_string()),
+                };
+            }
+        }
+    } else if cfg!(target_os = "windows") {
+
+        let output = Command::new(scheduler_string)
+            .output();
+        
+        match output {
+            Ok(output) => {
+                if output.status.success() {
+                    return DwOperationExecutionResult {
+                        success: true,
+                        exit_code: 0,
+                        message: Some("Command executed successfully".to_string()),
+                    };
+                } else {
+                    return DwOperationExecutionResult {
+                        success: false,
+                        exit_code: output.status.code().unwrap_or(1),
+                        message: Some(String::from_utf8_lossy(&output.stderr).to_string()),
+                    };
+                }
+            },
+            Err(e) => {
+                return DwOperationExecutionResult {
+                    success: false,
+                    exit_code: 1,
+                    message: Some(e.to_string()),
+                };
+            }
+        }
+
+    } else {
+        return DwOperationExecutionResult {
+            success: false,
+            exit_code: 16,
+            message: Some("Unsupported OS".to_string()),
+        };
     }
 }

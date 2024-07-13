@@ -88,7 +88,6 @@ fn get_desktop_environment() -> String {
     }
 }
 
-
 #[cfg(target_os = "windows")]
 fn set_windows_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
     let path_as_str = path.to_str().ok_or("Invalid path")?;
@@ -363,4 +362,35 @@ pub fn list_images_in_directory(directory: &Path) -> Result<Vec<String>, Box<dyn
     }
 
     Ok(image_paths)
+}
+
+pub fn generate_schedule(preset: DwPreset, interval: u8, task_name: &str, action: &str) -> String {
+    #[cfg(target_os = "linux")]
+    {
+        generate_cron_string(preset, interval)
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        generate_schtasks_command(preset, interval, task_name, action)
+    }
+}
+
+
+#[cfg(target_os = "linux")]
+fn generate_cron_string(preset: DwPreset, interval: u8) -> String {
+    match preset {
+        DwPreset::HOUR => format!("0 */{} * * *", interval),
+        DwPreset::MINUTE => format!("*/{} * * * *", interval),
+        DwPreset::DAY => format!("0 0 */{} * *", interval),
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn generate_schtasks_command(preset: DwPreset, interval: u8, task_name: &str, action: &str) -> String {
+    match preset {
+        DwPreset::HOUR => format!("schtasks /create /tn {} /tr {} /sc hourly /mo {}", task_name, action, interval),
+        DwPreset::MINUTE => format!("schtasks /create /tn {} /tr {} /sc minute /mo {}", task_name, action, interval),
+        DwPreset::DAY => format!("schtasks /create /tn {} /tr {} /sc daily /mo {}", task_name, action, interval),
+    }
 }

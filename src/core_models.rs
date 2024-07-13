@@ -34,7 +34,7 @@ pub struct DwWallpaperCandidate {
     pub sub_index: usize,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub enum DwPreset {
     HOUR,
     MINUTE,
