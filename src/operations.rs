@@ -635,7 +635,7 @@ pub fn reset() -> DwOperationExecutionResult {
     }
 }
 
-pub fn on() -> DwOperationExecutionResult{
+pub fn on() -> DwOperationExecutionResult{  
     let config = match read_config_json("config/config.json") {
         Ok(config) => config,
         Err(e) => {
