@@ -636,7 +636,7 @@ pub fn reset() -> DwOperationExecutionResult {
 }
 
 pub fn on() -> DwOperationExecutionResult{
-    let mut config = match read_config_json("config/config.json") {
+    let config = match read_config_json("config/config.json") {
         Ok(config) => config,
         Err(e) => {
             return DwOperationExecutionResult {
@@ -648,10 +648,12 @@ pub fn on() -> DwOperationExecutionResult{
     };
 
     let action: String;
-    if cfg!(target_os = "linux") {
+
+    #[cfg(target_os = "linux")]{
         action = "~/.dw/bin/dw next".to_string();
-    } else if cfg!(target_os = "windows") {
-        // Dynamically constructing the path using USERPROFILE environment variable
+    }
+
+    #[cfg(target_os = "windows")]{
         action = match env::var("USERPROFILE") {
             Ok(user_profile) => format!(r"{}\AppData\Local\dw\bin\dw next", user_profile),
             Err(e) => {
@@ -662,20 +664,14 @@ pub fn on() -> DwOperationExecutionResult{
                 };
             },
         };
-    } else {
-        return DwOperationExecutionResult {
-            success: false,
-            exit_code: 16,
-            message: Some("Unsupported OS".to_string()),
-        };
     }
     
     // Converting `action` to `&str`
     let action: &str = &action;
 
     let scheduler_string = generate_schedule(config.time_config.preset, config.time_config.interval, "DWR", action);
-    println!("{}", scheduler_string);
-    if cfg!(target_os = "linux") {  
+    
+    #[cfg(target_os = "linux")]{  
 
         fn add_cron_entry(entry: &str) -> Result<(), Box<dyn std::error::Error>> {
             let status = Command::new("sh")
@@ -726,7 +722,10 @@ pub fn on() -> DwOperationExecutionResult{
                 };
             }
         }
-    } else if cfg!(target_os = "windows") {
+    
+    }
+    
+    #[cfg(target_os = "windows")]{
 
         let output = Command::new(scheduler_string)
             .output();
@@ -755,18 +754,13 @@ pub fn on() -> DwOperationExecutionResult{
                 };
             }
         }
-
-    } else {
-        return DwOperationExecutionResult {
-            success: false,
-            exit_code: 16,
-            message: Some("Unsupported OS".to_string()),
-        };
     }
+
 }
 
 pub fn off() -> DwOperationExecutionResult {
-    if cfg!(target_os = "linux") {
+
+    #[cfg(target_os = "linux")]{
 
         let config = match read_config_json("config/config.json") {
             Ok(config) => config,
@@ -810,8 +804,9 @@ pub fn off() -> DwOperationExecutionResult {
                 }
             }
         }
+    }
 
-    } else if cfg!(target_os = "windows") {
+    #[cfg(target_os = "windows")]{
         let output = Command::new("cmd")
             .args(&["/C", "schtasks /delete /tn DWR /f"])
             .output();
@@ -839,12 +834,6 @@ pub fn off() -> DwOperationExecutionResult {
                     message: Some(e.to_string()),
                 };
             }
-        }
-    }else{
-        return DwOperationExecutionResult {
-            success: true,
-            exit_code: 0,
-            message: Some("Unsupported OS".to_string()),
-        };
+        }   
     }
 }

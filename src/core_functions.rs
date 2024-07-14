@@ -42,11 +42,6 @@ pub fn change_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
     {
         set_windows_wallpaper(path)
     }
-
-    #[cfg(target_os = "macos")]
-    {
-        set_macos_wallpaper(path)
-    }
 }
 
 #[cfg(target_os = "linux")]
@@ -94,30 +89,6 @@ fn set_windows_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
 
     let command_execution_output = Command::new("external_builds\\windows\\WallpaperChanger.exe")
         .args(Some(path_as_str))
-        .output()
-        .map_err(|e| {
-            format!(
-                "Error: Failed to execute process to change wallpaper: {}",
-                e
-            )
-        })?;
-
-    if !command_execution_output.status.success() {
-        return Err("Error: The command to change the wallpaper failed.".into());
-    }
-
-    Ok(())
-}
-
-#[cfg(target_os = "macos")]
-fn set_macos_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
-    let command = format!(
-        "osascript -e 'tell application \"System Events\" to set picture of every desktop to {:?}'",
-        path
-    );
-
-    let command_execution_output = Command::new("sh")
-        .args(["-c", &command])
         .output()
         .map_err(|e| {
             format!(
@@ -375,8 +346,6 @@ pub fn generate_schedule(preset: DwPreset, interval: u8, task_name: &str, action
         generate_schtasks_command(preset, interval, task_name, action)
     }
 }
-
-
 
 #[cfg(target_os = "linux")]
 fn generate_cron_string(preset: DwPreset, interval: u8, action: &str) -> String {
