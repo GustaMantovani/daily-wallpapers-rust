@@ -26,17 +26,9 @@ use crate::operations::{
 };
 use clap::Parser;
 use std::process::ExitCode;
-#[cfg(target_os = "linux")]
-use std::env;
 
 fn main() -> ExitCode {
-
-    #[cfg(target_os = "linux")]{
-        env::set_var("DISPLAY", ":0");
-        env::set_var("XAUTHORITY", "/run/user/1000/.mutter-Xwaylandauth.FJ82G2");
-        env::set_var("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/1000/bus");
-    }
-
+    
     let cli: Cli = Cli::parse();
     let operation_res;
 

@@ -24,6 +24,9 @@ use std::{
     process::Command
 };
 
+#[cfg(target_os = "linux")]
+use std::env;
+
 pub fn change_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
     if !path.exists() {
         return Err("Error: The specified file path does not exist.".into());
@@ -46,6 +49,12 @@ pub fn change_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
 
 #[cfg(target_os = "linux")]
 fn set_linux_wallpaper(path: &Path) -> Result<(), Box<dyn Error>> {
+
+    env::set_var("DISPLAY", ":0");
+    env::set_var("XAUTHORITY", "/run/user/1000/.mutter-Xwaylandauth.FJ82G2");
+    env::set_var("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/1000/bus");
+
+
     let desktop_env = get_desktop_environment();
 
     let command = match desktop_env.as_str() {
@@ -331,7 +340,7 @@ pub fn list_images_in_directory(directory: &Path) -> Result<Vec<String>, Box<dyn
             }
         }
     }
-
+    println!("\n{:?}\n", image_paths);
     Ok(image_paths)
 }
 
@@ -359,8 +368,16 @@ fn generate_cron_string(preset: DwPreset, interval: u8, action: &str) -> String 
 #[cfg(target_os = "windows")]
 fn generate_schtasks_command(preset: DwPreset, interval: u8, task_name: &str, action: &str) -> String {
     match preset {
-        DwPreset::HOUR => format!("schtasks /create /tn {} /tr {} /sc hourly /mo {}", task_name, action, interval),
-        DwPreset::MINUTE => format!("schtasks /create /tn {} /tr {} /sc minute /mo {}", task_name, action, interval),
-        DwPreset::DAY => format!("schtasks /create /tn {} /tr {} /sc daily /mo {}", task_name, action, interval),
+        DwPreset::HOUR => format!("schtasks /create /tn {} /tr {} /sc HOURLY /mo {} /IT",
+            task_name, action, interval
+        ),
+        DwPreset::MINUTE => format!(
+            "schtasks /create /tn {} /tr {} /sc MINUTE /mo {} /IT",
+            task_name, action, interval
+        ),
+        DwPreset::DAY => format!(
+            "schtasks /create /tn {} /tr {} /sc DAILY /mo {} /IT",
+            task_name, action, interval
+        ),
     }
 }

@@ -156,7 +156,7 @@ pub fn add_wallpaper(path: &String) -> DwOperationExecutionResult {
 pub fn rm_wallpaper(path: &String) -> DwOperationExecutionResult {
     match read_config_json(&"config/config.json".to_string()) {
         Ok(mut config) => {
-            if let Some(index) = config.candidates.iter().position(|x| x == path) {
+            if let Some(index) = config.candidates.iter().position(|x| x == path) {     
                 config.candidates.remove(index);
 
                 match write_config_json(config, "config/config.json".to_string()) {
@@ -653,9 +653,13 @@ pub fn on() -> DwOperationExecutionResult{
         action = "~/.dw/bin/dw next".to_string();
     }
 
-    #[cfg(target_os = "windows")]{
+    #[cfg(target_os = "windows")]
+    {
         action = match env::var("USERPROFILE") {
-            Ok(user_profile) => format!(r"{}\AppData\Local\dw\bin\dw next", user_profile),
+            Ok(user_profile) => format!(
+                "\"powershell -Command 'cd {}/OneDrive/Documents/pjct/daily-wallpapers-rust ; .\\target\\release\\daily-wallpapers-rust.exe next'\"",
+                user_profile.replace("\\", "/") // Substitui as barras invertidas para evitar problemas de escape
+            ),
             Err(e) => {
                 return DwOperationExecutionResult {
                     success: false,
@@ -666,11 +670,13 @@ pub fn on() -> DwOperationExecutionResult{
         };
     }
     
+    
+    
     // Converting `action` to `&str`
     let action: &str = &action;
 
     let scheduler_string = generate_schedule(config.time_config.preset, config.time_config.interval, "DWR", action);
-    
+    println!("{}", scheduler_string);
     #[cfg(target_os = "linux")]{  
 
         fn add_cron_entry(entry: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -726,7 +732,6 @@ pub fn on() -> DwOperationExecutionResult{
     }
     
     #[cfg(target_os = "windows")]{
-
         let output = Command::new(scheduler_string)
             .output();
         
@@ -755,7 +760,7 @@ pub fn on() -> DwOperationExecutionResult{
             }
         }
     }
-
+    
 }
 
 pub fn off() -> DwOperationExecutionResult {
