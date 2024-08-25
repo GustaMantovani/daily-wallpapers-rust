@@ -115,7 +115,7 @@ pub fn add_wallpaper(path: &String) -> DwOperationExecutionResult {
     {
         return DwOperationExecutionResult {
             success: false,
-            exit_code: 17,
+            exit_code: 6,
             message: Some(
                 "The specified file or directory does isn't an image or directory".to_string(),
             ),
@@ -170,7 +170,7 @@ pub fn rm_wallpaper(path: &String) -> DwOperationExecutionResult {
                     Err(e) => {
                         return DwOperationExecutionResult {
                             success: false,
-                            exit_code: 8,
+                            exit_code: 7,
                             message: Some(e.to_string()),
                         };
                     }
@@ -178,14 +178,14 @@ pub fn rm_wallpaper(path: &String) -> DwOperationExecutionResult {
             }
             return DwOperationExecutionResult {
                 success: false,
-                exit_code: 9,
+                exit_code: 8,
                 message: Some("Wallpaper not found in config".to_string()),
             };
         }
         Err(e) => {
             return DwOperationExecutionResult {
                 success: false,
-                exit_code: 10,
+                exit_code: 9,
                 message: Some(e.to_string()),
             };
         }
@@ -210,7 +210,7 @@ pub fn set_preset(preset: &str, interval: Option<u8>) -> DwOperationExecutionRes
                 _ => {
                     return DwOperationExecutionResult {
                         success: false,
-                        exit_code: 11,
+                        exit_code: 10,
                         message: Some("Invalid preset".to_string()),
                     };
                 }
@@ -233,7 +233,7 @@ pub fn set_preset(preset: &str, interval: Option<u8>) -> DwOperationExecutionRes
                 Err(e) => {
                     return DwOperationExecutionResult {
                         success: false,
-                        exit_code: 12,
+                        exit_code: 11,
                         message: Some(e.to_string()),
                     };
                 }
@@ -242,7 +242,7 @@ pub fn set_preset(preset: &str, interval: Option<u8>) -> DwOperationExecutionRes
         Err(e) => {
             return DwOperationExecutionResult {
                 success: false,
-                exit_code: 13,
+                exit_code: 12,
                 message: Some(e.to_string()),
             };
         }
@@ -255,7 +255,7 @@ pub fn previous() -> DwOperationExecutionResult {
         Err(e) => {
             return DwOperationExecutionResult {
                 success: false,
-                exit_code: 16,
+                exit_code: 13,
                 message: Some(e.to_string()),
             };
         }
@@ -274,7 +274,7 @@ pub fn previous() -> DwOperationExecutionResult {
                 None => {
                     return DwOperationExecutionResult {
                         success: false,
-                        exit_code: 15,
+                        exit_code: 14,
                         message: Some("Error getting file name from path".into()),
                     };
                 }
@@ -374,7 +374,7 @@ pub fn previous() -> DwOperationExecutionResult {
                 Err(e) => {
                     return DwOperationExecutionResult {
                         success: false,
-                        exit_code: 16,
+                        exit_code: 17,
                         message: Some(e.to_string()),
                     };
                 }
@@ -401,7 +401,7 @@ pub fn previous() -> DwOperationExecutionResult {
         Err(e) => {
             return DwOperationExecutionResult {
                 success: false,
-                exit_code: 16,
+                exit_code: 18,
                 message: Some(e.to_string()),
             };
         }
@@ -414,7 +414,7 @@ pub fn next()-> DwOperationExecutionResult{
         Err(e) => {
             return DwOperationExecutionResult {
                 success: false,
-                exit_code: 16,
+                exit_code: 19,
                 message: Some(e.to_string()),
             };
         }
@@ -433,7 +433,7 @@ pub fn next()-> DwOperationExecutionResult{
                 None => {
                     return DwOperationExecutionResult {
                         success: false,
-                        exit_code: 15,
+                        exit_code: 20,
                         message: Some("Error getting file name from path".into()),
                     };
                 }
@@ -441,7 +441,7 @@ pub fn next()-> DwOperationExecutionResult{
             None => {
                 return DwOperationExecutionResult {
                     success: false,
-                    exit_code: 15,
+                    exit_code: 21,
                     message: Some("Error getting parent directory from path".into()),
                 };
             }
@@ -471,7 +471,7 @@ pub fn next()-> DwOperationExecutionResult{
             Err(e) => {
                 return DwOperationExecutionResult {
                     success: false,
-                    exit_code: 16,
+                    exit_code: 22,
                     message: Some(e.to_string()),
                 };
             }
@@ -499,7 +499,7 @@ pub fn next()-> DwOperationExecutionResult{
                     Err(e) => {
                         return DwOperationExecutionResult {
                             success: false,
-                            exit_code: 16,
+                            exit_code: 23,
                             message: Some(e.to_string()),
                         }
                     }
@@ -520,7 +520,7 @@ pub fn next()-> DwOperationExecutionResult{
                 Err(e) => {
                     return DwOperationExecutionResult {
                         success: false,
-                        exit_code: 16,
+                        exit_code: 24,
                         message: Some(e.to_string()),
                     }
                 }
@@ -538,7 +538,7 @@ pub fn next()-> DwOperationExecutionResult{
             Err(e) => {
                 return DwOperationExecutionResult {
                     success: false,
-                    exit_code: 16,
+                    exit_code: 25,
                     message: Some(e.to_string()),
                 }
             }
@@ -567,7 +567,7 @@ pub fn next()-> DwOperationExecutionResult{
         Err(e) => {
             return DwOperationExecutionResult {
                 success: false,
-                exit_code: 16,
+                exit_code: 26,
                 message: Some(e.to_string()),
             };
         }
@@ -580,7 +580,7 @@ pub fn reset() -> DwOperationExecutionResult {
         Err(e) => {
             return DwOperationExecutionResult {
                 success: false,
-                exit_code: 16,
+                exit_code: 27,
                 message: Some(e.to_string()),
             };
         }
@@ -600,7 +600,7 @@ pub fn reset() -> DwOperationExecutionResult {
                 } else {
                     return DwOperationExecutionResult {
                         success: false,
-                        exit_code: 17,
+                        exit_code: 28,
                         message: Some("The directory is empty".to_string()),
                     };
                 }
@@ -608,7 +608,7 @@ pub fn reset() -> DwOperationExecutionResult {
             Err(e) => {
                 return DwOperationExecutionResult {
                     success: false,
-                    exit_code: 18,
+                    exit_code: 29,
                     message: Some(e.to_string()),
                 };
             }
@@ -629,7 +629,7 @@ pub fn reset() -> DwOperationExecutionResult {
         Ok(_) => set_wallpaper(&reset_wallpaper_path),
         Err(e) => DwOperationExecutionResult {
             success: false,
-            exit_code: 19,
+            exit_code: 30,
             message: Some(e.to_string()),
         },
     }
@@ -641,7 +641,7 @@ pub fn on() -> DwOperationExecutionResult{
         Err(e) => {
             return DwOperationExecutionResult {
                 success: false,
-                exit_code: 16,
+                exit_code: 31,
                 message: Some(e.to_string()),
             };
         }
@@ -663,7 +663,7 @@ pub fn on() -> DwOperationExecutionResult{
             Err(e) => {
                 return DwOperationExecutionResult {
                     success: false,
-                    exit_code: 16,
+                    exit_code: 32,
                     message: Some(e.to_string()),
                 };
             },
@@ -696,7 +696,7 @@ pub fn on() -> DwOperationExecutionResult{
             DwPreset::DAY => {
                 return DwOperationExecutionResult {
                     success: false,
-                    exit_code: 16,
+                    exit_code: 33,
                     message: Some("Unsupported OS".to_string()),
                 };
             }
@@ -713,7 +713,7 @@ pub fn on() -> DwOperationExecutionResult{
                     Err(e) => {
                         return DwOperationExecutionResult {
                             success: false,
-                            exit_code: 16,
+                            exit_code: 34,
                             message: Some(e.to_string()),
                         };
                     }
@@ -723,7 +723,7 @@ pub fn on() -> DwOperationExecutionResult{
             _ => {
                 return DwOperationExecutionResult {
                     success: false,
-                    exit_code: 16,
+                    exit_code: 35,
                     message: Some("Unsupported OS".to_string()),
                 };
             }
@@ -772,7 +772,7 @@ pub fn off() -> DwOperationExecutionResult {
             Err(e) => {
                 return DwOperationExecutionResult {
                     success: false,
-                    exit_code: 16,
+                    exit_code: 36,
                     message: Some(e.to_string()),
                 };
             }
@@ -804,7 +804,7 @@ pub fn off() -> DwOperationExecutionResult {
             Err(e) => {
                 DwOperationExecutionResult {
                     success: false,
-                    exit_code: 1,
+                    exit_code: 37,
                     message: Some(format!("Erro ao remover a entrada do cron: {}", e)),
                 }
             }
@@ -821,7 +821,7 @@ pub fn off() -> DwOperationExecutionResult {
                 if output.status.success() {
                     return DwOperationExecutionResult {
                         success: true,
-                        exit_code: 0,
+                        exit_code: 38,
                         message: Some("Command executed successfully".to_string()),
                     };
                 } else {
@@ -835,7 +835,7 @@ pub fn off() -> DwOperationExecutionResult {
             Err(e) => {
                 return DwOperationExecutionResult {
                     success: false,
-                    exit_code: 1,
+                    exit_code: 39,
                     message: Some(e.to_string()),
                 };
             }
