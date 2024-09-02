@@ -23,32 +23,38 @@ if %ERRORLEVEL% neq 0 (
 
 echo Build dependencies succeeded!
 
-:: Create the .dwr\bin directory in the user's home directory
-set "DWR_DIR=%USERPROFILE%\.dwr\bin"
+:: Create the .dwr directory in the user's home directory
+set "DWR_DIR=%USERPROFILE%\.dwr"
 if not exist "%DWR_DIR%" (
     mkdir "%DWR_DIR%"
 )
 
-:: Move the executable to the .dwr\bin directory
-set "EXECUTABLE_NAME=daily-wallpapers-rust.exe"
-move "target\release\%EXECUTABLE_NAME%" "%DWR_DIR%"
-
-:: Check if the move was successful
+:: Move the external_builds folder to the target directory
+set "TARGET_DIR=%DWR_DIR%"
+if not exist "%TARGET_DIR%" (
+    mkdir "%TARGET_DIR%"
+)
+move /Y "%~dp0external_builds" "%TARGET_DIR%"
 if %ERRORLEVEL% neq 0 (
-    echo Failed to move the executable!
+    echo Failed to move external_builds!
     exit /b %ERRORLEVEL%
 )
 
-echo Executable moved to %DWR_DIR%
+echo external_builds moved successfully!
 
-:: Add .dwr\bin to the PATH permanently
-setx PATH "%PATH%;%DWR_DIR%"
+:: Move the executable to the target directory
+set "EXECUTABLE_NAME=target\release\daily-wallpapers-rust.exe"
+set "TARGET_EXEC_DIR=%DWR_DIR%"
+if not exist "%TARGET_EXEC_DIR%" (
+    mkdir "%TARGET_EXEC_DIR%"
+)
+move /Y "%~dp0%EXECUTABLE_NAME%" "%TARGET_EXEC_DIR%"
 if %ERRORLEVEL% neq 0 (
-    echo Failed to add %DWR_DIR% to PATH!
+    echo Failed to move %EXECUTABLE_NAME%!
     exit /b %ERRORLEVEL%
 )
 
-echo %DWR_DIR% added to PATH permanently
+echo %EXECUTABLE_NAME% moved successfully!
 
 :: Pause the script so you can see the output
 pause

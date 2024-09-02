@@ -158,17 +158,7 @@ pub fn init() -> Result<(), Box<dyn std::error::Error>> {
             .map_err(|e| format!("Error: Failed to create config.json file: {}", e))?;
     }
 
-    #[cfg(target_os = "macos")]
-    {
-        Command::new("sh")
-            .args(["-c", "mkdir -p config"])
-            .output()
-            .map_err(|e| format!("Error: Failed to create config directory: {}", e))?;
-        Command::new("sh")
-            .args(["-c", "touch config/config.json"])
-            .output()
-            .map_err(|e| format!("Error: Failed to create config.json file: {}", e))?;
-    }
+
 
     let empty_config = DwConfig {
         actual_wallpaper: DwWallpaperCandidate {
@@ -246,28 +236,7 @@ pub fn change_config_file(new_config_path: &Path) -> Result<(), Box<dyn Error>> 
             })?;
     }
 
-    #[cfg(target_os = "macos")]
-    {
-        Command::new("sh")
-            .args(["-c", &format!("mkdir -p {}", CONFIG_DIR_PATH)])
-            .output()
-            .map_err(|e| {
-                format!(
-                    "Error: Failed to create config directory {}: {}",
-                    CONFIG_DIR_PATH, e
-                )
-            })?;
 
-        Command::new("sh")
-            .args(["-c", &format!("cp {:?} {}", new_config_path, CONFIG_DIR_PATH)])
-            .output()
-            .map_err(|e| {
-                format!(
-                    "Error: Failed to copy new config file to {}: {}",
-                    CONFIG_DIR_PATH, e
-                )
-            })?;
-    }
 
     Ok(())
 }
@@ -340,14 +309,13 @@ pub fn list_images_in_directory(directory: &Path) -> Result<Vec<String>, Box<dyn
             }
         }
     }
-    println!("\n{:?}\n", image_paths);
     Ok(image_paths)
 }
-
-pub fn generate_schedule(preset: DwPreset, interval: u8, task_name: &str, action: &str) -> String {
+pub fn generate_schedule(preset: DwPreset, interval: u8, task_name: &str, action: &str) -> (String, Vec<String>) {
     #[cfg(target_os = "linux")]
     {
-        generate_cron_string(preset, interval, action)
+        let cron_string = generate_cron_string(preset, interval, action);
+        (cron_string, Vec::new()) // No Linux, retorna a string de cron e um vetor vazio.
     }
 
     #[cfg(target_os = "windows")]
@@ -366,18 +334,27 @@ fn generate_cron_string(preset: DwPreset, interval: u8, action: &str) -> String 
 }
 
 #[cfg(target_os = "windows")]
-fn generate_schtasks_command(preset: DwPreset, interval: u8, task_name: &str, action: &str) -> String {
-    match preset {
-        DwPreset::HOUR => format!("schtasks /create /tn {} /tr {} /sc HOURLY /mo {} /IT",
-            task_name, action, interval
-        ),
-        DwPreset::MINUTE => format!(
-            "schtasks /create /tn {} /tr {} /sc MINUTE /mo {} /IT",
-            task_name, action, interval
-        ),
-        DwPreset::DAY => format!(
-            "schtasks /create /tn {} /tr {} /sc DAILY /mo {} /IT",
-            task_name, action, interval
-        ),
-    }
+fn generate_schtasks_command(preset: DwPreset, interval: u8, task_name: &str, action: &str) -> (String, Vec<String>) {
+    let sc_type = match preset {
+        DwPreset::HOUR => "HOURLY",
+        DwPreset::MINUTE => "MINUTE",
+        DwPreset::DAY => "DAILY",
+    };
+
+    let command = "schtasks".to_string();
+    let args = vec![
+        "/create".to_string(),
+        "/tn".to_string(),
+        task_name.to_string(),
+        "/tr".to_string(),
+        action.to_string(),
+        "/sc".to_string(),
+        sc_type.to_string(),
+        "/mo".to_string(),
+        interval.to_string(),
+        "/IT".to_string(),
+    ];
+
+    (command, args)
 }
+

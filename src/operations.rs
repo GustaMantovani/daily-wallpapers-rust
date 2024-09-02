@@ -657,8 +657,8 @@ pub fn on() -> DwOperationExecutionResult{
     {
         action = match env::var("USERPROFILE") {
             Ok(user_profile) => format!(
-                "\"powershell -Command 'cd {}/OneDrive/Documents/pjct/daily-wallpapers-rust ; .\\target\\release\\daily-wallpapers-rust.exe next'\"",
-                user_profile.replace("\\", "/") // Substitui as barras invertidas para evitar problemas de escape
+                "powershell -Command 'cd {}\\.dwr ; .\\daily-wallpapers-rust.exe next'",
+                user_profile
             ),
             Err(e) => {
                 return DwOperationExecutionResult {
@@ -675,34 +675,37 @@ pub fn on() -> DwOperationExecutionResult{
     // Converting `action` to `&str`
     let action: &str = &action;
 
-    let scheduler_string = generate_schedule(config.time_config.preset, config.time_config.interval, "DWR", action);
-    println!("{}", scheduler_string);
-    #[cfg(target_os = "linux")]{  
-
+    //println!("{}", scheduler_string);
+    #[cfg(target_os = "linux")]
+    {
+        // Chama a função `generate_schedule` e obtém a string do cron
+        let cron_string = generate_schedule(config.time_config.preset, config.time_config.interval, "DWR", action);
+    
+        // Função para adicionar a entrada ao cron
         fn add_cron_entry(entry: &str) -> Result<(), Box<dyn std::error::Error>> {
             let status = Command::new("sh")
                 .arg("scripts/linux/cron_adder.sh")
                 .arg(entry)
                 .status()?;
-            
+    
             if status.success() {
                 Ok(())
             } else {
                 Err("Failed to add cron entry".into())
             }
         }
-        
+    
         match config.time_config.preset {
             DwPreset::DAY => {
                 return DwOperationExecutionResult {
                     success: false,
                     exit_code: 33,
-                    message: Some("Unsupported OS".to_string()),
+                    message: Some("Unsupported preset".to_string()),
                 };
             }
-
+    
             DwPreset::HOUR | DwPreset::MINUTE => {
-                match add_cron_entry(scheduler_string.as_str()) {
+                match add_cron_entry(cron_string.as_str()) {
                     Ok(()) => {
                         return DwOperationExecutionResult {
                             success: true,
@@ -719,22 +722,25 @@ pub fn on() -> DwOperationExecutionResult{
                     }
                 }
             }
-
+    
             _ => {
                 return DwOperationExecutionResult {
                     success: false,
                     exit_code: 35,
-                    message: Some("Unsupported OS".to_string()),
+                    message: Some("Unsupported preset".to_string()),
                 };
             }
         }
-    
     }
     
-    #[cfg(target_os = "windows")]{
-        let output = Command::new(scheduler_string)
+    #[cfg(target_os = "windows")]
+    {
+        let (command, args) = generate_schedule(config.time_config.preset, config.time_config.interval, "DWR", &action);
+    
+        let output = Command::new(&command)
+            .args(&args)
             .output();
-        
+    
         match output {
             Ok(output) => {
                 if output.status.success() {
@@ -750,7 +756,7 @@ pub fn on() -> DwOperationExecutionResult{
                         message: Some(String::from_utf8_lossy(&output.stderr).to_string()),
                     };
                 }
-            },
+            }
             Err(e) => {
                 return DwOperationExecutionResult {
                     success: false,
@@ -760,7 +766,6 @@ pub fn on() -> DwOperationExecutionResult{
             }
         }
     }
-    
 }
 
 pub fn off() -> DwOperationExecutionResult {
